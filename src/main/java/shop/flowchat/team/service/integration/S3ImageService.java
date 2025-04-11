@@ -1,4 +1,4 @@
-package shop.flowchat.team.service;
+package shop.flowchat.team.service.integration;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;

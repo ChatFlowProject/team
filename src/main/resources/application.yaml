@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: local # ${PROFILE_ACTIVE}
+    active: {PROFILE_ACTIVE}
   datasource:
     driver-class-name: ${DB_DRIVER_CLASS_NAME}
     url: ${DB_URL}
@@ -30,6 +30,10 @@ cloud:
       auto: false
     stack:
       auto: false
+
+feign:
+  chatflow:
+    member: ${MEMBER_SERVICE_URL}
 
 management:
   endpoint.health.probes.enabled: true

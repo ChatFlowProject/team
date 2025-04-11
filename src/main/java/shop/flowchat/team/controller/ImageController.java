@@ -8,10 +8,10 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import shop.flowchat.team.dto.ApiResponse;
-import shop.flowchat.team.service.S3ImageService;
+import shop.flowchat.team.service.integration.S3ImageService;
 
 @Slf4j
-@Tag(name = "이미지 API")
+@Tag(name = "Image Service API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/images")
