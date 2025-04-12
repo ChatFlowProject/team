@@ -14,7 +14,7 @@ public interface MemberClient {
     @GetMapping("/members")
     ApiResponse<MemberInfoResponse> getMemberInfo(@RequestHeader("Authorization") String token);
 
-    @PostMapping("/search")
+    @PostMapping("/members/search")
     ApiResponse<MemberResponse> getMemberInfoList(
             @RequestHeader("Authorization") String token,
             @RequestBody MemberListRequest request);

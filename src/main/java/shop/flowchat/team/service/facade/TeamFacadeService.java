@@ -133,7 +133,7 @@ public class TeamFacadeService {
             List<Category> categories = categoryService.getCategoryByTeamId(teamId);
             List<Channel> channels = channelService.getChannelByCategoryIds(
                     categories.stream().map(Category::getId).toList());
-            // TeamViewResponse 데이터 파싱
+            // TeamViewResponse 데이터 파싱 및 반환
             TeamResponse teamResponse = TeamResponse.from(team);
             List<CategoryViewResponse> categoryViewResponses = categories.stream()
                     .map(category -> CategoryViewResponse.from(
@@ -141,7 +141,7 @@ public class TeamFacadeService {
                             channels.stream()
                                     .filter(channel -> channel.getCategory().getId().equals(category.getId()))
                                     .map(ChannelResponse::from)
-                                    .sorted(Comparator.comparing(ChannelResponse::position).reversed()) // position 내림차순 정렬
+                                    .sorted(Comparator.comparing(ChannelResponse::position))// position 오름차순 정렬
                                     .collect(Collectors.toList())))
                     .collect(Collectors.toList());
             List<TeamMemberResponse> teamMemberResponses = teamMembers.stream()
