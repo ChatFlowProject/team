@@ -3,18 +3,18 @@ package shop.flowchat.team.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import shop.flowchat.team.dto.ApiResponse;
 import shop.flowchat.team.service.integration.S3ImageService;
 
-@Slf4j
 @Tag(name = "Image Service API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/images")
+@Profile("prod")
 public class ImageController {
     private final S3ImageService s3ImageService;
 
@@ -22,7 +22,6 @@ public class ImageController {
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ApiResponse<String> uploadImage(@RequestPart MultipartFile file) {
         String imgPath = s3ImageService.upload(file);
-        log.info("imagePath = {}", imgPath);
         return ApiResponse.success(imgPath);
     }
 

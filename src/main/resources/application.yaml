@@ -18,19 +18,6 @@ spring:
       hibernate.format_sql: true
       dialect: org.hibernate.dialect.MySQL8InnoDBDialect
 
-cloud:
-  aws:
-    s3:
-      bucket: ${BUCKET_NAME}
-    credentials:
-      access-key: ${ACCESS_KEY}
-      secret-key: ${SECRET_KEY}
-    region:
-      static: ${REGION}
-      auto: false
-    stack:
-      auto: false
-
 feign:
   chatflow:
     member: ${MEMBER_SERVICE_URL}
