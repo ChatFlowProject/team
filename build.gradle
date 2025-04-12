@@ -54,3 +54,7 @@ dependencyManagement {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.named("jar") { // plain.jar 생성되지 않도록 설정
+    enabled = false
+}
