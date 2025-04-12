@@ -1,4 +1,4 @@
-package shop.flowchat.team.dto.member;
+package shop.flowchat.team.dto.member.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;

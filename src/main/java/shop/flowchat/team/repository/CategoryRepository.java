@@ -16,5 +16,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("SELECT c FROM Category c JOIN FETCH c.team WHERE c.team.id = :teamId")
     List<Category> findByTeamId(@Param("teamId") UUID teamId);
 
-    Integer countByTeamId(UUID teamId);
+    // Integer countByTeamId(UUID teamId);
+
 }

@@ -6,7 +6,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.dto.ApiResponse;
-import shop.flowchat.team.dto.channel.ChannelCreateRequest;
+import shop.flowchat.team.dto.channel.request.ChannelCreateRequest;
+import shop.flowchat.team.dto.channel.response.ChannelCreateResponse;
 import shop.flowchat.team.service.facade.TeamFacadeService;
 
 import java.util.UUID;
@@ -17,13 +18,14 @@ import java.util.UUID;
 @RequestMapping("/teams/{teamId}/categories/{categoryId}/channels")
 public class ChannelController {
     private final TeamFacadeService teamFacadeService;
+    // todo: 토큰 헤더 추가 및 권한 체크 로직 추가
 
     @Operation(summary = "채널 생성")
     @PostMapping
-    public ApiResponse<Long> createChannel(
+    public ApiResponse<ChannelCreateResponse> createChannel(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("categoryId") Long categoryId,
-            @Valid @RequestBody ChannelCreateRequest request) {
+            @Valid @RequestBody ChannelCreateRequest request) { // todo: kafka 추가시 position 가장 아래 배치
         return ApiResponse.success(teamFacadeService.addChannel(teamId, categoryId, request));
     }
 

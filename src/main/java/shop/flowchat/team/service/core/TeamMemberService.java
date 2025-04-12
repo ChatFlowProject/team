@@ -1,6 +1,5 @@
 package shop.flowchat.team.service.core;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -8,8 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import shop.flowchat.team.entity.team.Team;
 import shop.flowchat.team.entity.teammember.MemberRole;
 import shop.flowchat.team.entity.teammember.TeamMember;
+import shop.flowchat.team.exception.common.EntityNotFoundException;
 import shop.flowchat.team.repository.TeamMemberRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -34,4 +35,8 @@ public class TeamMemberService {
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 팀 멤버입니다."));
     }
 
+    @Transactional(readOnly = true)
+    public List<TeamMember> getTeamMembersByTeamId(UUID teamId) {
+        return teamMemberRepository.findByTeamId(teamId);
+    }
 }

@@ -1,4 +1,4 @@
-package shop.flowchat.team.dto.team;
+package shop.flowchat.team.dto.team.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;

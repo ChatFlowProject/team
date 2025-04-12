@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import shop.flowchat.team.dto.category.CategoryCreateRequest;
+import shop.flowchat.team.dto.category.request.CategoryCreateRequest;
 import shop.flowchat.team.entity.BaseEntity;
 import shop.flowchat.team.entity.team.Team;
 

@@ -1,24 +1,23 @@
 package shop.flowchat.team.service.integration;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.dto.ApiResponse;
-import shop.flowchat.team.dto.member.MemberResponse;
+import shop.flowchat.team.dto.member.request.MemberListRequest;
+import shop.flowchat.team.dto.member.response.MemberInfoResponse;
+import shop.flowchat.team.dto.member.response.MemberResponse;
 
 import java.util.UUID;
 
 @FeignClient(name = "member-service", url = "${feign.chatflow.member}")
 public interface MemberClient {
     @GetMapping("/members")
-    ApiResponse<MemberResponse> getMemberInfo(@RequestHeader("Authorization") String token);
+    ApiResponse<MemberInfoResponse> getMemberInfo(@RequestHeader("Authorization") String token);
 
-    @GetMapping("/members/{memberId}")
-    ApiResponse<MemberResponse> getMemberInfo(
+    @PostMapping("/search")
+    ApiResponse<MemberResponse> getMemberInfoList(
             @RequestHeader("Authorization") String token,
-            @PathVariable("memberId") UUID memberId);
+            @RequestBody MemberListRequest request);
 
     @GetMapping("/friendships/me")
     ApiResponse<Boolean> checkFriendship(

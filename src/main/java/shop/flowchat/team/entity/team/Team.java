@@ -6,7 +6,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import shop.flowchat.team.dto.team.TeamCreateRequest;
+import shop.flowchat.team.dto.team.request.TeamCreateRequest;
 import shop.flowchat.team.entity.BaseEntity;
 
 import java.util.UUID;

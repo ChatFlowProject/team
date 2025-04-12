@@ -1,11 +1,11 @@
-package shop.flowchat.team.dto.member;
+package shop.flowchat.team.dto.member.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record MemberResponse(
+public record MemberInfoResponse(
         @Schema(description = "회원 고유키", example = "98bd5bf6-848a-43d4-8683-205523c9e359")
         UUID id,
         @Schema(description = "회원 닉네임", example = "jerry0339")

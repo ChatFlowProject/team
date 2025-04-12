@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import shop.flowchat.team.dto.team.TeamCreateRequest;
+import shop.flowchat.team.dto.team.request.TeamCreateRequest;
 import shop.flowchat.team.entity.team.Team;
 import shop.flowchat.team.exception.common.EntityNotFoundException;
 import shop.flowchat.team.repository.TeamRepository;
