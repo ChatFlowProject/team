@@ -162,10 +162,10 @@ public class TeamFacadeService {
     }
 
     @Transactional
-    public void modifyTeamMemberRole(String token, UUID teamId, UUID memberId, MemberRole role) {
+    public void modifyTeamMemberRole(String token, UUID teamId, UUID targetId, MemberRole role) {
         try {
-            memberClient.getMemberInfo(token).data().id(); // todo: 수정자의 권한 확인 로직 추가 (AuthorizationException)
-            teamMemberService.modifyMemberRole(teamId, memberId, role);
+            memberClient.getMemberInfo(token).data().id();
+            teamMemberService.modifyMemberRole(teamId, targetId, role);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on modifyTeamMemberRole. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
@@ -192,7 +192,19 @@ public class TeamFacadeService {
     }
 
     @Transactional
+    public void kickTeamMember(String token, UUID teamId, UUID targetId) {
+        try {
+            memberClient.getMemberInfo(token).data().id();
+            teamMemberService.deleteByTeamIdAndMemberId(teamId, targetId);
+        } catch (FeignException e) {
+            throw new ExternalServiceException(String.format("Failed to get response on leaveTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
+        }
+    }
+
+    @Transactional
     public void deleteCategory(UUID teamId, Long categoryId) {
 
     }
+
+
 }

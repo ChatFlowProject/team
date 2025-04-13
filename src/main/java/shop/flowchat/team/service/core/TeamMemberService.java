@@ -46,8 +46,8 @@ public class TeamMemberService {
     }
 
     @Transactional
-    public void modifyMemberRole(UUID teamId, UUID memberId, MemberRole role) {
-        TeamMember teamMember = getTeamMemberByTeamIdAndMemberId(teamId, memberId);
+    public void modifyMemberRole(UUID teamId, UUID targetId, MemberRole role) {
+        TeamMember teamMember = getTeamMemberByTeamIdAndMemberId(teamId, targetId);
         teamMember.modifyMemberRole(role);
     }
 

@@ -38,22 +38,32 @@ public class TeamMemberController {
     }
 
     @Operation(summary = "팀 회원의 권한 수정")
-    @PatchMapping("/{memberId}")
+    @PatchMapping("/{targetId}")
     public ApiResponse modifyTeamMemberRole(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId,
-            @PathVariable("memberId") UUID memberId,
-            @Valid @RequestBody TeamMemberModifyRoleRequest request) { // todo: 권한 추가
-        teamFacadeService.modifyTeamMemberRole(token, teamId, memberId, MemberRole.of(request.memberRole()));
+            @PathVariable("targetId") UUID targetId,
+            @Valid @RequestBody TeamMemberModifyRoleRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
+        teamFacadeService.modifyTeamMemberRole(token, teamId, targetId, MemberRole.of(request.memberRole()));
         return ApiResponse.success();
     }
 
     @Operation(summary = "팀 서버 나가기")
-    @DeleteMapping("/{memberId}")
+    @DeleteMapping
     public ApiResponse leaveTeam(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId) {
         teamFacadeService.leaveTeam(token, teamId);
+        return ApiResponse.success();
+    }
+
+    @Operation(summary = "팀 서버 회원 추방")
+    @DeleteMapping("/{targetId}")
+    public ApiResponse kickTeamMember(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String token,
+            @PathVariable("teamId") UUID teamId,
+            @PathVariable("targetId") UUID targetId) {  // todo: 권한 체크 추가 (AuthorizationException)
+        teamFacadeService.kickTeamMember(token, teamId, targetId);
         return ApiResponse.success();
     }
 
