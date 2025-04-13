@@ -11,7 +11,7 @@ public record TeamResponse(
         @Schema(description = "팀 서버 이름", example = "차느님의 서버")
         String name,
         @Schema(description = "팀 생성자(회원) 고유키", example = "f3ca6705-9cde-4d6c-a3bf-eb89703ac1d7")
-        UUID ownerId,
+        UUID creatorId,
         @Schema(description = "팀 서버 아이콘 이미지 url", example = "https://snowball-bucket.s3.ap-northeast-2.amazonaws.com/f41b6bb9-3jerry.png")
         String iconUrl
 ) {
@@ -19,7 +19,7 @@ public record TeamResponse(
         return new TeamResponse(
                 team.getId(),
                 team.getName(),
-                team.getOwnerId(),
+                team.getCreatorId(),
                 team.getIconUrl()
         );
     }

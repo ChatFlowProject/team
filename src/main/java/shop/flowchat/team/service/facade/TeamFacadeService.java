@@ -71,7 +71,7 @@ public class TeamFacadeService {
     public Long addTeamMember(String token, UUID teamId, UUID memberId) {
         try {
             Boolean isFriend = memberClient.checkFriendship(token, memberId).data();
-            if (!isFriend) throw new AuthorizationException("잘못된 요청입니다. 초대 대상과 친구 관계가 아닙니다.");
+            if (!isFriend) throw new AuthorizationException("초대 대상과 친구 관계가 아닙니다.");
             Team team = teamService.getTeamById(teamId);
             return teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER).getId();
         } catch (FeignException e) {
@@ -99,7 +99,7 @@ public class TeamFacadeService {
 
     @Transactional
     public ChannelCreateResponse addChannel(UUID teamId, Long categoryId, ChannelCreateRequest request) {
-        Category category = validateTeamCategory(teamId, categoryId);
+        Category category = categoryService.validateTeamCategory(teamId, categoryId);
         Channel channel = channelService.createChannel(request, category);
         return ChannelCreateResponse.from(channel.getId(), channel.getPosition());
     }
@@ -108,8 +108,8 @@ public class TeamFacadeService {
     public List<TeamResponse> getAllTeams(String token) {
         try {
             UUID memberId = memberClient.getMemberInfo(token).data().id();
-            return teamService.getAllTeamsByMemberId(memberId).stream()
-                    .map(TeamResponse::from)
+            return teamMemberService.getTeamMembersByMemberId(memberId).stream()
+                    .map(teamMember -> TeamResponse.from(teamMember.getTeam()))
                     .collect(Collectors.toList());
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on getAllTeams. [status:%s][message:%s]", e.status(), e.getMessage()));
@@ -127,7 +127,7 @@ public class TeamFacadeService {
                     MemberListRequest.from(teamMembers.stream().map(TeamMember::getMemberId).toList())).data();
             // 해당 팀 서버 조회 요청자의 권한 체크
             if (teamMembers.stream().noneMatch(tm -> tm.getMemberId().equals(memberResponse.requester()))) {
-                throw new AuthorizationException("잘못된 요청입니다. 해당 팀 서버의 회원이 아닙니다.");
+                throw new AuthorizationException("해당 팀 서버의 회원이 아닙니다.");
             }
             // 팀 서버의 카테고리 및 채널 조회
             List<Category> categories = categoryService.getCategoryByTeamId(teamId);
@@ -170,16 +170,12 @@ public class TeamFacadeService {
     }
 
     @Transactional
-    public void deleteCategory(UUID teamId, Long categoryId) {
-
-    }
-
-    public Category validateTeamCategory(UUID teamId, Long categoryId) {
-        Category category = categoryService.getCategoryById(categoryId);
-        if (!category.getTeam().getId().equals(teamId)) {
-            throw new IllegalArgumentException("잘못된 요청입니다. 요청한 팀 ID가 카테고리가 위치한 팀 ID와 일치하지 않습니다.");
+    public void deleteTeam(String token, UUID teamId) {
+        try {
+            UUID memberId = memberClient.getMemberInfo(token).data().id();
+            teamService.deleteTeam(memberId, teamId);
+        } catch (FeignException e) {
+            throw new ExternalServiceException(String.format("Failed to get response on deleteTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
-        return category;
     }
-
 }

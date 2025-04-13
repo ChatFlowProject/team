@@ -45,4 +45,13 @@ public class TeamController {
         return ApiResponse.success(teamFacadeService.getTeamView(token, teamId));
     }
 
+    @Operation(summary = "팀 서버 삭제")
+    @DeleteMapping("/{teamId}")
+    public ApiResponse deleteTeam(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String token,
+            @PathVariable("teamId") UUID teamId) {
+        teamFacadeService.deleteTeam(token, teamId);
+        return ApiResponse.success();
+    }
+
 }

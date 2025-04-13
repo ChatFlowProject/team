@@ -23,21 +23,21 @@ public class Team extends BaseEntity {
     private String name;
     
     @Column(nullable = false)
-    private UUID ownerId; // 회원 Id와 같음
+    private UUID creatorId; // 회원 Id와 같음
 
     private String iconUrl;
 
     @Builder
-    private Team(String name, UUID ownerId, String iconUrl) {
+    private Team(String name, UUID creatorId, String iconUrl) {
         this.name = name;
-        this.ownerId = ownerId;
+        this.creatorId = creatorId;
         this.iconUrl = iconUrl;
     }
 
-    public static Team from(TeamCreateRequest request, UUID ownerId) {
+    public static Team from(TeamCreateRequest request, UUID creatorId) {
         return Team.builder()
                 .name(request.name())
-                .ownerId(ownerId)
+                .creatorId(creatorId)
                 .iconUrl(request.iconUrl())
                 .build();
     }

@@ -36,7 +36,13 @@ public class TeamMemberService {
     }
 
     @Transactional(readOnly = true)
+    public List<TeamMember> getTeamMembersByMemberId(UUID memberId) {
+        return teamMemberRepository.findByMemberId(memberId);
+    }
+
+    @Transactional(readOnly = true)
     public List<TeamMember> getTeamMembersByTeamId(UUID teamId) {
         return teamMemberRepository.findByTeamId(teamId);
     }
+
 }

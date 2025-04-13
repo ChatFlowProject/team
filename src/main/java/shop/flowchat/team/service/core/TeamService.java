@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.flowchat.team.dto.team.request.TeamCreateRequest;
 import shop.flowchat.team.entity.team.Team;
+import shop.flowchat.team.exception.common.AuthorizationException;
 import shop.flowchat.team.exception.common.EntityNotFoundException;
 import shop.flowchat.team.repository.TeamRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -18,8 +18,8 @@ public class TeamService {
     private final TeamRepository teamRepository;
 
     @Transactional
-    public Team createTeam(TeamCreateRequest request, UUID ownerId) {
-        Team team = Team.from(request, ownerId);
+    public Team createTeam(TeamCreateRequest request, UUID creatorId) {
+        Team team = Team.from(request, creatorId);
         try {
             teamRepository.save(team);
         } catch (DataIntegrityViolationException e) {
@@ -29,14 +29,18 @@ public class TeamService {
     }
 
     @Transactional(readOnly = true)
-    public List<Team> getAllTeamsByMemberId(UUID memberId) {
-        return teamRepository.findByOwnerId(memberId);
-    }
-
-    @Transactional(readOnly = true)
     public Team getTeamById(UUID teamId) {
         return teamRepository.findById(teamId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 팀 서버입니다."));
+    }
+
+    @Transactional
+    public void deleteTeam(UUID memberId, UUID teamId) {
+        Team team = getTeamById(teamId);
+        if(!team.getCreatorId().equals(memberId)) {
+            throw new AuthorizationException("팀 서버 생성자가 아닙니다.");
+        }
+        teamRepository.delete(team);
     }
 
 }

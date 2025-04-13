@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import shop.flowchat.team.dto.category.request.CategoryCreateRequest;
 import shop.flowchat.team.entity.category.Category;
 import shop.flowchat.team.entity.team.Team;
+import shop.flowchat.team.exception.common.AuthorizationException;
 import shop.flowchat.team.exception.common.EntityNotFoundException;
 import shop.flowchat.team.repository.CategoryRepository;
 
@@ -45,4 +46,12 @@ public class CategoryService {
 
     }
 
+    @Transactional(readOnly = true)
+    public Category validateTeamCategory(UUID teamId, Long categoryId) {
+        Category category = getCategoryById(categoryId);
+        if (!category.getTeam().getId().equals(teamId)) {
+            throw new AuthorizationException("카테고리가 위치한 팀 ID와 일치하지 않습니다.");
+        }
+        return category;
+    }
 }
