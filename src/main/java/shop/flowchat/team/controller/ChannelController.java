@@ -25,7 +25,7 @@ public class ChannelController {
     public ApiResponse<ChannelCreateResponse> createChannel(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("categoryId") Long categoryId,
-            @Valid @RequestBody ChannelCreateRequest request) { // todo: kafka 추가시 position 가장 아래 배치
+            @Valid @RequestBody ChannelCreateRequest request) {
         return ApiResponse.success(teamFacadeService.addChannel(teamId, categoryId, request));
     }
 

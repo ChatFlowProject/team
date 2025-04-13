@@ -1,7 +1,6 @@
 package shop.flowchat.team.entity.category;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,12 +28,11 @@ public class Category extends BaseEntity {
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
 
-    @Min(1)
     @Column(nullable = false)
-    private Integer position;
+    private Double position;
 
     @Builder
-    private Category(String name, Team team, Integer position) {
+    private Category(String name, Team team, Double position) {
         this.name = name;
         this.team = team;
         this.position = position;
@@ -44,7 +42,7 @@ public class Category extends BaseEntity {
         return Category.builder()
                 .name(request.name())
                 .team(team)
-                .position(request.position())
+                .position(1000.0)
                 .build();
     }
 }

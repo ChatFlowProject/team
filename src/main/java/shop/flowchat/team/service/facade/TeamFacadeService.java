@@ -190,4 +190,9 @@ public class TeamFacadeService {
             throw new ExternalServiceException(String.format("Failed to get response on leaveTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
     }
+
+    @Transactional
+    public void deleteCategory(UUID teamId, Long categoryId) {
+
+    }
 }

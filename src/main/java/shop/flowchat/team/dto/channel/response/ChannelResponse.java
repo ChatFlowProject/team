@@ -9,8 +9,8 @@ public record ChannelResponse(
         Long id,
         @Schema(description = "채널 이름", example = "fe-알림")
         String name,
-        @Schema(description = "카테고리내 채널 위치", example = "6")
-        Integer position,
+        @Schema(description = "카테고리내 채널 위치", example = "62.5")
+        Double position,
         @Schema(description = "채널 유형", example = "TEXT")
         ChannelType type
 

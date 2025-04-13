@@ -47,12 +47,12 @@ public class TeamMemberController {
         teamFacadeService.modifyTeamMemberRole(token, teamId, memberId, MemberRole.of(request.memberRole()));
         return ApiResponse.success();
     }
-    
+
     @Operation(summary = "팀 서버 나가기")
     @DeleteMapping("/{memberId}")
     public ApiResponse leaveTeam(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
-                                 @PathVariable("teamId") UUID teamId) {
+            @PathVariable("teamId") UUID teamId) {
         teamFacadeService.leaveTeam(token, teamId);
         return ApiResponse.success();
     }

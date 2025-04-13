@@ -24,7 +24,7 @@ public class CategoryController {
     @PostMapping
     public ApiResponse<CategoryCreateResponse> createCategory(
             @PathVariable("teamId") UUID teamId,
-            @Valid @RequestBody CategoryCreateRequest request) { // todo: kafka 추가시 position 가장 아래 배치
+            @Valid @RequestBody CategoryCreateRequest request) {
         return ApiResponse.success(teamFacadeService.addCategory(teamId, request));
     }
 
@@ -33,7 +33,7 @@ public class CategoryController {
     public ApiResponse deleteCategory(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("categoryId") Long categoryId) {
-//        teamFacadeService.deleteCategory(teamId, categoryId);
+        teamFacadeService.deleteCategory(teamId, categoryId);
         return ApiResponse.success();
     }
 

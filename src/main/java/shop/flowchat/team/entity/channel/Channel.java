@@ -1,7 +1,6 @@
 package shop.flowchat.team.entity.channel;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,16 +28,15 @@ public class Channel extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Min(1)
     @Column(nullable = false)
-    private Integer position;
+    private Double position;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ChannelType type;
 
     @Builder
-    private Channel(String name, Category category, Integer position, ChannelType type) {
+    private Channel(String name, Category category, Double position, ChannelType type) {
         this.name = name;
         this.category = category;
         this.position = position;
@@ -49,7 +47,7 @@ public class Channel extends BaseEntity {
         return Channel.builder()
                 .name(request.name())
                 .category(category)
-                .position(request.position())
+                .position(1000.0)
                 .type(ChannelType.of(request.channelType()))
                 .build();
     }

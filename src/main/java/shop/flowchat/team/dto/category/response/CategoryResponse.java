@@ -8,8 +8,8 @@ public record CategoryResponse(
         Long id,
         @Schema(description = "카테고리 이름", example = "frontend")
         String name,
-        @Schema(description = "팀 서버내 카테고리 위치", example = "3")
-        Integer position
+        @Schema(description = "팀 서버내 카테고리 위치", example = "31.25")
+        Double position
 ) {
     public static CategoryResponse from(Category category) {
         return new CategoryResponse(
