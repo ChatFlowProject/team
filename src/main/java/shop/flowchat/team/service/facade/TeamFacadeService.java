@@ -208,4 +208,10 @@ public class TeamFacadeService {
         categoryService.deleteCategoryByCategory(category);
     }
 
+    @Transactional
+    public void deleteChannel(UUID teamId, Long categoryId, Long channelId) {
+        // teamId & memberId(token) -> 권한 체크
+        Channel channel = channelService.validateCategoryChannel(categoryId, channelId);
+        channelService.deleteChannelByChannel(channel);
+    }
 }

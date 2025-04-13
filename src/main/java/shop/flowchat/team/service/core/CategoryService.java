@@ -39,6 +39,15 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
+    public Category validateTeamCategory(UUID teamId, Long categoryId) {
+        Category category = getCategoryById(categoryId);
+        if (!category.getTeam().getId().equals(teamId)) {
+            throw new AuthorizationException("카테고리가 위치한 팀 ID와 일치하지 않습니다.");
+        }
+        return category;
+    }
+
+    @Transactional(readOnly = true)
     public List<Category> getCategoryByTeamId(UUID teamId) {
         return categoryRepository.findByTeamId(teamId);
     }
@@ -48,12 +57,4 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    @Transactional(readOnly = true)
-    public Category validateTeamCategory(UUID teamId, Long categoryId) {
-        Category category = getCategoryById(categoryId);
-        if (!category.getTeam().getId().equals(teamId)) {
-            throw new AuthorizationException("카테고리가 위치한 팀 ID와 일치하지 않습니다.");
-        }
-        return category;
-    }
 }

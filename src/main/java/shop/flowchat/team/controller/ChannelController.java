@@ -18,15 +18,24 @@ import java.util.UUID;
 @RequestMapping("/teams/{teamId}/categories/{categoryId}/channels")
 public class ChannelController {
     private final TeamFacadeService teamFacadeService;
-    // todo: 토큰 헤더 추가 및 권한 체크 로직 추가
 
     @Operation(summary = "채널 생성")
     @PostMapping
     public ApiResponse<ChannelCreateResponse> createChannel(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("categoryId") Long categoryId,
-            @Valid @RequestBody ChannelCreateRequest request) {
+            @Valid @RequestBody ChannelCreateRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
         return ApiResponse.success(teamFacadeService.addChannel(teamId, categoryId, request));
+    }
+
+    @Operation(summary = "채널 삭제")
+    @DeleteMapping("/{channelId}")
+    public ApiResponse deleteCategory(
+            @PathVariable("teamId") UUID teamId,
+            @PathVariable("categoryId") Long categoryId,
+            @PathVariable("channelId") Long channelId) { // todo: 권한 체크 추가 (AuthorizationException)
+        teamFacadeService.deleteChannel(teamId, categoryId, channelId);
+        return ApiResponse.success();
     }
 
 }
