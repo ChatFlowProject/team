@@ -27,7 +27,7 @@ public class CategoryService {
         try {
             categoryRepository.save(category);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("입력값이 잘못되었습니다.: " + e.getMessage());
+            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
         }
         return category;
     }
