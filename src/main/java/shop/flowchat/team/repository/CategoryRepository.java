@@ -16,6 +16,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("SELECT c FROM Category c JOIN FETCH c.team WHERE c.team.id = :teamId")
     List<Category> findByTeamId(@Param("teamId") UUID teamId);
 
-    // Integer countByTeamId(UUID teamId);
+    @Query("SELECT COALESCE(MAX(c.position), 0) FROM Category c WHERE c.team.id = :teamId")
+    Double findMaxPositionByTeamId(@Param("teamId") UUID teamId);
 
 }

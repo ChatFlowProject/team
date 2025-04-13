@@ -51,4 +51,8 @@ public class Channel extends BaseEntity {
                 .type(ChannelType.of(request.channelType()))
                 .build();
     }
+
+    public void movePositionBetween(Double positionA, Double positionB) {
+        position = (positionA + positionB)/2;
+    }
 }

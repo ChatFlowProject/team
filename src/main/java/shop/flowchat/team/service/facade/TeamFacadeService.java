@@ -175,7 +175,7 @@ public class TeamFacadeService {
     public void deleteTeam(String token, UUID teamId) {
         try {
             UUID memberId = memberClient.getMemberInfo(token).data().id();
-            teamService.deleteTeam(memberId, teamId);
+            teamService.deleteTeamByTeamId(memberId, teamId);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on deleteTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
@@ -197,14 +197,15 @@ public class TeamFacadeService {
             memberClient.getMemberInfo(token).data().id();
             teamMemberService.deleteByTeamIdAndMemberId(teamId, targetId);
         } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on leaveTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
+            throw new ExternalServiceException(String.format("Failed to get response on kickTeamMember. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
     }
 
     @Transactional
     public void deleteCategory(UUID teamId, Long categoryId) {
-
+        Category category = categoryService.validateTeamCategory(teamId, categoryId);
+        channelService.deleteChannelsByCategory(category);
+        categoryService.deleteCategoryByCategory(category);
     }
-
 
 }

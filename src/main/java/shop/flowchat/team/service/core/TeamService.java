@@ -35,7 +35,7 @@ public class TeamService {
     }
 
     @Transactional
-    public void deleteTeam(UUID memberId, UUID teamId) {
+    public void deleteTeamByTeamId(UUID memberId, UUID teamId) {
         Team team = getTeamById(teamId);
         if(!team.getMasterId().equals(memberId)) {
             throw new AuthorizationException("팀 서버 마스터가 아닙니다.");

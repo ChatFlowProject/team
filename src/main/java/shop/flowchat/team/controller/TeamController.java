@@ -33,7 +33,8 @@ public class TeamController {
 
     @Operation(summary = "회원이 참여중인 모든 팀 서버 조회")
     @GetMapping
-    public ApiResponse<List<TeamResponse>> getAllTeams(@Parameter(hidden = true) @RequestHeader("Authorization") String token) {
+    public ApiResponse<List<TeamResponse>> getAllTeams(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String token) {
         return ApiResponse.success(teamFacadeService.getAllTeams(token));
     }
 

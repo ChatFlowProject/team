@@ -62,7 +62,7 @@ public class TeamMemberController {
     public ApiResponse kickTeamMember(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId,
-            @PathVariable("targetId") UUID targetId) {  // todo: 권한 체크 추가 (AuthorizationException)
+            @PathVariable("targetId") UUID targetId) { // todo: 권한 체크 추가 (AuthorizationException)
         teamFacadeService.kickTeamMember(token, teamId, targetId);
         return ApiResponse.success();
     }

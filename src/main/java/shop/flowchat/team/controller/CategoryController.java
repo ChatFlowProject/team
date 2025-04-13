@@ -18,21 +18,20 @@ import java.util.UUID;
 @RequestMapping("/teams/{teamId}/categories")
 public class CategoryController {
     private final TeamFacadeService teamFacadeService;
-    // todo: 토큰 헤더 추가 및 권한 체크 로직 추가
 
     @Operation(summary = "카테고리 추가")
     @PostMapping
     public ApiResponse<CategoryCreateResponse> createCategory(
             @PathVariable("teamId") UUID teamId,
-            @Valid @RequestBody CategoryCreateRequest request) {
+            @Valid @RequestBody CategoryCreateRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
         return ApiResponse.success(teamFacadeService.addCategory(teamId, request));
     }
 
-    @Operation(summary = "카테고리 삭제 (미구현)")
+    @Operation(summary = "카테고리 삭제")
     @DeleteMapping("/{categoryId}")
     public ApiResponse deleteCategory(
             @PathVariable("teamId") UUID teamId,
-            @PathVariable("categoryId") Long categoryId) {
+            @PathVariable("categoryId") Long categoryId) { // todo: 권한 체크 추가 (AuthorizationException)
         teamFacadeService.deleteCategory(teamId, categoryId);
         return ApiResponse.success();
     }

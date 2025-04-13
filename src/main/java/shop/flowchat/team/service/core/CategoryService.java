@@ -22,6 +22,8 @@ public class CategoryService {
     @Transactional
     public Category createCategory(CategoryCreateRequest request, Team team) {
         Category category = Category.from(request, team);
+        Double maxPosition = categoryRepository.findMaxPositionByTeamId(team.getId());
+        category.movePositionBetween(maxPosition, maxPosition + 2000.0);
         try {
             categoryRepository.save(category);
         } catch (DataIntegrityViolationException e) {
@@ -42,8 +44,8 @@ public class CategoryService {
     }
 
     @Transactional
-    public void deleteCategory(UUID teamId, Long categoryId) {
-
+    public void deleteCategoryByCategory(Category category) {
+        categoryRepository.delete(category);
     }
 
     @Transactional(readOnly = true)
