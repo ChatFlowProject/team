@@ -1,6 +1,7 @@
 package shop.flowchat.team.entity.channel;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import shop.flowchat.team.entity.category.Category;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(uniqueConstraints = {@UniqueConstraint(
-        name = "uk_category_position",
+        name = "uk_channel_category_position",
         columnNames = {"category_id", "position"}
 )})
 public class Channel extends BaseEntity {
@@ -28,10 +29,12 @@ public class Channel extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Min(1)
     @Column(nullable = false)
     private Integer position;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ChannelType type;
 
     @Builder

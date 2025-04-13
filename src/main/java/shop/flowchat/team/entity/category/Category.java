@@ -1,6 +1,7 @@
 package shop.flowchat.team.entity.category;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import shop.flowchat.team.entity.team.Team;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(uniqueConstraints = {@UniqueConstraint(
-        name = "uk_team_position",
+        name = "uk_category_team_position",
         columnNames = {"team_id", "position"}
 )})
 public class Category extends BaseEntity {
@@ -28,6 +29,7 @@ public class Category extends BaseEntity {
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
 
+    @Min(1)
     @Column(nullable = false)
     private Integer position;
 

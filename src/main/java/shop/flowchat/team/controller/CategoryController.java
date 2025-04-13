@@ -33,7 +33,7 @@ public class CategoryController {
     public ApiResponse deleteCategory(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("categoryId") Long categoryId) {
-        teamFacadeService.deleteCategory(teamId, categoryId);
+//        teamFacadeService.deleteCategory(teamId, categoryId);
         return ApiResponse.success();
     }
 

@@ -43,8 +43,17 @@ public class TeamMemberController {
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId,
             @PathVariable("memberId") UUID memberId,
-            @Valid @RequestBody TeamMemberModifyRoleRequest request) {
+            @Valid @RequestBody TeamMemberModifyRoleRequest request) { // todo: 권한 추가
         teamFacadeService.modifyTeamMemberRole(token, teamId, memberId, MemberRole.of(request.memberRole()));
+        return ApiResponse.success();
+    }
+    
+    @Operation(summary = "팀 서버 나가기")
+    @DeleteMapping("/{memberId}")
+    public ApiResponse leaveTeam(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String token,
+                                 @PathVariable("teamId") UUID teamId) {
+        teamFacadeService.leaveTeam(token, teamId);
         return ApiResponse.success();
     }
 

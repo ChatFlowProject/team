@@ -45,4 +45,19 @@ public class TeamMemberService {
         return teamMemberRepository.findByTeamId(teamId);
     }
 
+    @Transactional
+    public void modifyMemberRole(UUID teamId, UUID memberId, MemberRole role) {
+        TeamMember teamMember = getTeamMemberByTeamIdAndMemberId(teamId, memberId);
+        teamMember.modifyMemberRole(role);
+    }
+
+    @Transactional
+    public void deleteByTeamIdAndMemberId(UUID teamId, UUID memberId) {
+        TeamMember teamMember = getTeamMemberByTeamIdAndMemberId(teamId, memberId);
+        if(teamMember.getTeam().getMasterId().equals(memberId)) {
+            throw new IllegalArgumentException("팀 서버 마스터는 팀을 떠날 수 없습니다.");
+        }
+        teamMemberRepository.delete(teamMember);
+    }
+
 }

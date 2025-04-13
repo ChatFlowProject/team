@@ -18,8 +18,8 @@ public class TeamService {
     private final TeamRepository teamRepository;
 
     @Transactional
-    public Team createTeam(TeamCreateRequest request, UUID creatorId) {
-        Team team = Team.from(request, creatorId);
+    public Team createTeam(TeamCreateRequest request, UUID masterId) {
+        Team team = Team.from(request, masterId);
         try {
             teamRepository.save(team);
         } catch (DataIntegrityViolationException e) {
@@ -37,8 +37,8 @@ public class TeamService {
     @Transactional
     public void deleteTeam(UUID memberId, UUID teamId) {
         Team team = getTeamById(teamId);
-        if(!team.getCreatorId().equals(memberId)) {
-            throw new AuthorizationException("팀 서버 생성자가 아닙니다.");
+        if(!team.getMasterId().equals(memberId)) {
+            throw new AuthorizationException("팀 서버 마스터가 아닙니다.");
         }
         teamRepository.delete(team);
     }

@@ -30,6 +30,7 @@ public class TeamMember extends BaseEntity {
     private UUID memberId;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private MemberRole role;
 
     @Builder

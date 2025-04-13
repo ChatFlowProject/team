@@ -27,6 +27,7 @@ import shop.flowchat.team.entity.teammember.MemberRole;
 import shop.flowchat.team.entity.teammember.TeamMember;
 import shop.flowchat.team.exception.ErrorCode;
 import shop.flowchat.team.exception.common.AuthorizationException;
+import shop.flowchat.team.exception.common.EntityNotFoundException;
 import shop.flowchat.team.exception.common.ExternalServiceException;
 import shop.flowchat.team.exception.common.ServiceException;
 import shop.flowchat.team.service.core.CategoryService;
@@ -119,9 +120,11 @@ public class TeamFacadeService {
     @Transactional(readOnly = true)
     public TeamViewResponse getTeamView(String token, UUID teamId) {
         try {
-            // Team 서버 및 TeamMember들 조회
-            Team team = teamService.getTeamById(teamId);
-            List<TeamMember> teamMembers = teamMemberService.getTeamMembersByTeamId(team.getId());
+            // Team 서버 및 TeamMember들 조회 (fetch join으로 Team까지 조회)
+            List<TeamMember> teamMembers = teamMemberService.getTeamMembersByTeamId(teamId);
+            if(teamMembers.size() == 0) { // 팀 마스터는 서버를 나갈 수 없으므로 teamMember 수가 0이면 삭제된 서버
+                throw new EntityNotFoundException("존재하지 않는 팀 서버입니다.");
+            }
             // TeamMember의 회원 정보 조회
             MemberResponse memberResponse = memberClient.getMemberInfoList(token,
                     MemberListRequest.from(teamMembers.stream().map(TeamMember::getMemberId).toList())).data();
@@ -134,7 +137,7 @@ public class TeamFacadeService {
             List<Channel> channels = channelService.getChannelByCategoryIds(
                     categories.stream().map(Category::getId).toList());
             // TeamViewResponse 데이터 파싱 및 반환
-            TeamResponse teamResponse = TeamResponse.from(team);
+            TeamResponse teamResponse = TeamResponse.from(teamMembers.get(0).getTeam());
             List<CategoryViewResponse> categoryViewResponses = categories.stream()
                     .map(category -> CategoryViewResponse.from(
                             CategoryResponse.from(category),
@@ -162,8 +165,7 @@ public class TeamFacadeService {
     public void modifyTeamMemberRole(String token, UUID teamId, UUID memberId, MemberRole role) {
         try {
             memberClient.getMemberInfo(token).data().id(); // todo: 수정자의 권한 확인 로직 추가 (AuthorizationException)
-            TeamMember teamMember = teamMemberService.getTeamMemberByTeamIdAndMemberId(teamId, memberId);
-            teamMember.modifyMemberRole(role);
+            teamMemberService.modifyMemberRole(teamId, memberId, role);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on modifyTeamMemberRole. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
@@ -176,6 +178,16 @@ public class TeamFacadeService {
             teamService.deleteTeam(memberId, teamId);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on deleteTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
+        }
+    }
+
+    @Transactional
+    public void leaveTeam(String token, UUID teamId) {
+        try {
+            UUID memberId = memberClient.getMemberInfo(token).data().id();
+            teamMemberService.deleteByTeamIdAndMemberId(teamId, memberId);
+        } catch (FeignException e) {
+            throw new ExternalServiceException(String.format("Failed to get response on leaveTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
     }
 }
