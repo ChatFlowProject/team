@@ -205,13 +205,13 @@ public class TeamFacadeService {
     public void deleteCategory(UUID teamId, Long categoryId) {
         Category category = categoryService.validateTeamCategory(teamId, categoryId);
         channelService.deleteChannelsByCategory(category);
-        categoryService.deleteCategoryByCategory(category);
+        categoryService.deleteCategory(category);
     }
 
     @Transactional
     public void deleteChannel(UUID teamId, Long categoryId, Long channelId) {
         // teamId & memberId(token) -> 권한 체크
         Channel channel = channelService.validateCategoryChannel(categoryId, channelId);
-        channelService.deleteChannelByChannel(channel);
+        channelService.deleteChannel(channel);
     }
 }

@@ -57,7 +57,7 @@ public class ChannelService {
     }
 
     @Transactional
-    public void deleteChannelByChannel(Channel channel) {
+    public void deleteChannel(Channel channel) {
         channelRepository.delete(channel);
     }
 }

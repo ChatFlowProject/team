@@ -53,7 +53,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public void deleteCategoryByCategory(Category category) {
+    public void deleteCategory(Category category) {
         categoryRepository.delete(category);
     }
 
