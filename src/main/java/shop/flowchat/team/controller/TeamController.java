@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.dto.ApiResponse;
 import shop.flowchat.team.dto.team.request.TeamCreateRequest;
+import shop.flowchat.team.dto.team.request.TeamUpdateRequest;
 import shop.flowchat.team.dto.team.response.TeamCreateResponse;
 import shop.flowchat.team.dto.team.response.TeamResponse;
 import shop.flowchat.team.dto.view.TeamViewResponse;
@@ -44,6 +45,15 @@ public class TeamController {
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId) {
         return ApiResponse.success(teamFacadeService.getTeamView(token, teamId));
+    }
+
+    @Operation(summary = "팀 서버 정보 수정")
+    @PutMapping("/{teamId}")
+    public ApiResponse<TeamResponse> updateTeam(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String token,
+            @PathVariable("teamId") UUID teamId,
+            @Valid @RequestBody TeamUpdateRequest request) {
+        return ApiResponse.success(teamFacadeService.updateTeam(token, teamId, request));
     }
 
     @Operation(summary = "팀 서버 삭제 (팀 회원까지 모두)")

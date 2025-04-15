@@ -1,12 +1,12 @@
 package shop.flowchat.team.entity.team;
 
-
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.flowchat.team.dto.team.request.TeamCreateRequest;
+import shop.flowchat.team.dto.team.request.TeamUpdateRequest;
 import shop.flowchat.team.entity.BaseEntity;
 
 import java.util.UUID;
@@ -41,5 +41,12 @@ public class Team extends BaseEntity {
                 .masterId(masterId)
                 .iconUrl(request.iconUrl())
                 .build();
+    }
+
+    public Team updateTeam(TeamUpdateRequest request) {
+        this.name = request.name();
+        this.masterId = request.masterId();
+        this.iconUrl = request.iconUrl();
+        return this;
     }
 }

@@ -7,7 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.dto.ApiResponse;
-import shop.flowchat.team.dto.teammember.request.TeamMemberUpdateRoleRequest;
+import shop.flowchat.team.dto.teammember.request.TeamMemberModifyRoleRequest;
 import shop.flowchat.team.entity.teammember.MemberRole;
 import shop.flowchat.team.service.facade.TeamFacadeService;
 
@@ -39,12 +39,12 @@ public class TeamMemberController {
 
     @Operation(summary = "팀 회원의 권한 수정")
     @PatchMapping("/{targetId}")
-    public ApiResponse updateTeamMemberRole(
+    public ApiResponse modifyTeamMemberRole(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId,
             @PathVariable("targetId") UUID targetId,
-            @Valid @RequestBody TeamMemberUpdateRoleRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
-        teamFacadeService.updateTeamMemberRole(token, teamId, targetId, MemberRole.of(request.memberRole()));
+            @Valid @RequestBody TeamMemberModifyRoleRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
+        teamFacadeService.modifyTeamMemberRole(token, teamId, targetId, MemberRole.of(request.memberRole()));
         return ApiResponse.success();
     }
 

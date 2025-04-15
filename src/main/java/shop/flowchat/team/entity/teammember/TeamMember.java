@@ -48,7 +48,7 @@ public class TeamMember extends BaseEntity {
                 .build();
     }
 
-    public void updateMemberRole(MemberRole role) {
+    public void modifyMemberRole(MemberRole role) {
         this.role = role;
     }
 }

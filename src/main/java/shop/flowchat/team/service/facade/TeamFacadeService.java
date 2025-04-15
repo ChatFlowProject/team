@@ -14,6 +14,7 @@ import shop.flowchat.team.dto.channel.response.ChannelResponse;
 import shop.flowchat.team.dto.member.request.MemberListRequest;
 import shop.flowchat.team.dto.member.response.MemberResponse;
 import shop.flowchat.team.dto.team.request.TeamCreateRequest;
+import shop.flowchat.team.dto.team.request.TeamUpdateRequest;
 import shop.flowchat.team.dto.team.response.TeamCreateResponse;
 import shop.flowchat.team.dto.team.response.TeamResponse;
 import shop.flowchat.team.dto.teammember.response.TeamMemberResponse;
@@ -162,12 +163,12 @@ public class TeamFacadeService {
     }
 
     @Transactional
-    public void updateTeamMemberRole(String token, UUID teamId, UUID targetId, MemberRole role) {
+    public void modifyTeamMemberRole(String token, UUID teamId, UUID targetId, MemberRole role) {
         try {
             memberClient.getMemberInfo(token).data().id();
-            teamMemberService.updateMemberRole(teamId, targetId, role);
+            teamMemberService.modifyMemberRole(teamId, targetId, role);
         } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on updateTeamMemberRole. [status:%s][message:%s]", e.status(), e.getMessage()));
+            throw new ExternalServiceException(String.format("Failed to get response on modifyTeamMemberRole. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
     }
 
@@ -221,4 +222,16 @@ public class TeamFacadeService {
         Channel channel = channelService.validateCategoryChannel(categoryId, channelId);
         channelService.deleteChannel(channel);
     }
+
+    @Transactional
+    public TeamResponse updateTeam(String token, UUID teamId, TeamUpdateRequest request) {
+        try {
+            UUID memberId = memberClient.getMemberInfo(token).data().id();
+            Team team = teamService.validateTeamMaster(teamId, memberId);
+            return TeamResponse.from(team.updateTeam(request));
+        } catch (FeignException e) {
+            throw new ExternalServiceException(String.format("Failed to get response on updateTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
+        }
+    }
+
 }
