@@ -162,12 +162,12 @@ public class TeamFacadeService {
     }
 
     @Transactional
-    public void modifyTeamMemberRole(String token, UUID teamId, UUID targetId, MemberRole role) {
+    public void updateTeamMemberRole(String token, UUID teamId, UUID targetId, MemberRole role) {
         try {
             memberClient.getMemberInfo(token).data().id();
-            teamMemberService.modifyMemberRole(teamId, targetId, role);
+            teamMemberService.updateMemberRole(teamId, targetId, role);
         } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on modifyTeamMemberRole. [status:%s][message:%s]", e.status(), e.getMessage()));
+            throw new ExternalServiceException(String.format("Failed to get response on updateTeamMemberRole. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
     }
 
