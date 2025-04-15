@@ -34,12 +34,17 @@ public class TeamService {
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 팀 서버입니다."));
     }
 
-    @Transactional
-    public void deleteTeamByTeamId(UUID memberId, UUID teamId) {
+    @Transactional(readOnly = true)
+    public Team validateTeamMaster(UUID teamId, UUID memberId) {
         Team team = getTeamById(teamId);
         if(!team.getMasterId().equals(memberId)) {
             throw new AuthorizationException("팀 서버 마스터가 아닙니다.");
         }
+        return team;
+    }
+
+    @Transactional
+    public void deleteTeam(Team team) {
         teamRepository.delete(team);
     }
 

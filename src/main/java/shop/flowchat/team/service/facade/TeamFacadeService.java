@@ -133,7 +133,7 @@ public class TeamFacadeService {
                 throw new AuthorizationException("해당 팀 서버의 회원이 아닙니다.");
             }
             // 팀 서버의 카테고리 및 채널 조회
-            List<Category> categories = categoryService.getCategoryByTeamId(teamId);
+            List<Category> categories = categoryService.getCategoryByTeam(teamMembers.get(0).getTeam());
             List<Channel> channels = channelService.getChannelByCategoryIds(
                     categories.stream().map(Category::getId).toList());
             // TeamViewResponse 데이터 파싱 및 반환
@@ -175,7 +175,14 @@ public class TeamFacadeService {
     public void deleteTeam(String token, UUID teamId) {
         try {
             UUID memberId = memberClient.getMemberInfo(token).data().id();
-            teamService.deleteTeamByTeamId(memberId, teamId);
+            Team team = teamService.validateTeamMaster(teamId, memberId);
+            List<Category> categories = categoryService.getCategoryByTeam(team);
+            if (!categories.isEmpty()) {
+                channelService.deleteAllChannelsByCategories(categories);
+                categoryService.deleteAllCategoriesByTeam(team);
+            }
+            teamMemberService.deleteAllByTeam(team);
+            teamService.deleteTeam(team);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on deleteTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         }

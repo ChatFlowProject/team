@@ -1,5 +1,6 @@
 package shop.flowchat.team.dto.view;
 
+import org.springframework.util.ObjectUtils;
 import shop.flowchat.team.dto.team.response.TeamResponse;
 import shop.flowchat.team.dto.teammember.response.TeamMemberResponse;
 
@@ -11,6 +12,8 @@ public record TeamViewResponse(
         List<TeamMemberResponse> teamMembers
 ) {
     public static TeamViewResponse from(TeamResponse team, List<CategoryViewResponse> categoriesView, List<TeamMemberResponse> teamMembers) {
+        if(ObjectUtils.isEmpty(categoriesView)) categoriesView = List.of();
+        if(ObjectUtils.isEmpty(teamMembers)) teamMembers = List.of();
         return new TeamViewResponse(
                 team,
                 categoriesView,

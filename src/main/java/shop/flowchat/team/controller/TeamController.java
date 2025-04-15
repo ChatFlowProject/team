@@ -46,7 +46,7 @@ public class TeamController {
         return ApiResponse.success(teamFacadeService.getTeamView(token, teamId));
     }
 
-    @Operation(summary = "팀 서버 삭제")
+    @Operation(summary = "팀 서버 삭제 (팀 회원까지 모두)")
     @DeleteMapping("/{teamId}")
     public ApiResponse deleteTeam(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,

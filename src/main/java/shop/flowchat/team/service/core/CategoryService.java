@@ -47,9 +47,14 @@ public class CategoryService {
         return category;
     }
 
+    @Transactional
+    public void deleteAllCategoriesByTeam(Team team) {
+        categoryRepository.deleteByTeam(team);
+    }
+
     @Transactional(readOnly = true)
-    public List<Category> getCategoryByTeamId(UUID teamId) {
-        return categoryRepository.findByTeamId(teamId);
+    public List<Category> getCategoryByTeam(Team team) {
+        return categoryRepository.findByTeam(team);
     }
 
     @Transactional

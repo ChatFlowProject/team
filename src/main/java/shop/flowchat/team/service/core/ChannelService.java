@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import shop.flowchat.team.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.entity.category.Category;
 import shop.flowchat.team.entity.channel.Channel;
@@ -12,6 +13,7 @@ import shop.flowchat.team.exception.common.EntityNotFoundException;
 import shop.flowchat.team.repository.ChannelRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -33,6 +35,7 @@ public class ChannelService {
 
     @Transactional(readOnly = true)
     public List<Channel> getChannelByCategoryIds(List<Long> categoryIds) {
+        if(ObjectUtils.isEmpty(categoryIds)) return List.of();
         return channelRepository.findByCategoryIdIn(categoryIds);
     }
 
@@ -49,6 +52,15 @@ public class ChannelService {
             throw new AuthorizationException("채널이 위치한 카테고리 ID와 일치하지 않습니다.");
         }
         return channel;
+    }
+
+    @Transactional
+    public void deleteAllChannelsByCategories(List<Category> categories) {
+        if (ObjectUtils.isEmpty(categories)) return;
+        List<Long> categoryIds = categories.stream()
+                .map(Category::getId) // Category 엔티티에서 ID 추출
+                .collect(Collectors.toList());
+        channelRepository.deleteByCategoryIdsIn(categoryIds);
     }
 
     @Transactional

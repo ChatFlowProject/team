@@ -1,6 +1,7 @@
 package shop.flowchat.team.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import shop.flowchat.team.entity.category.Category;
@@ -15,6 +16,10 @@ public interface ChannelRepository extends JpaRepository<Channel, Long> {
     @Query("SELECT COALESCE(MAX(c.position), 0) FROM Channel c WHERE c.category.id = :categoryId")
     Double findMaxPositionByCategoryId(@Param("categoryId") Long categoryId);
 
-    void deleteByCategory(Category category);
+    void deleteByCategory(Category category); // 벌크로 동작하는 쿼리 메소드
+
+    @Modifying
+    @Query("DELETE FROM Channel c WHERE c.category.id IN :categoryIds")
+    void deleteByCategoryIdsIn(@Param("categoryIds") List<Long> categoryIds);
 
 }

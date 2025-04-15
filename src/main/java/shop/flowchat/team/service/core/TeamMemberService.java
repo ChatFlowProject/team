@@ -60,4 +60,9 @@ public class TeamMemberService {
         teamMemberRepository.delete(teamMember);
     }
 
+    @Transactional
+    public void deleteAllByTeam(Team team) {
+        teamMemberRepository.deleteByTeam(team);
+    }
+
 }
