@@ -15,6 +15,6 @@ public enum ChannelType {
         return Arrays.stream(values())
                 .filter(t -> t.toString().equals(type))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("옳바르지 않은 채널 유형입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("올바르지 않은 채널 유형입니다."));
     }
 }

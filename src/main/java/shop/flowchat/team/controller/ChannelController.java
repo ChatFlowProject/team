@@ -7,9 +7,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.dto.ApiResponse;
 import shop.flowchat.team.dto.channel.request.ChannelCreateRequest;
+import shop.flowchat.team.dto.channel.request.ChannelMoveRequest;
 import shop.flowchat.team.dto.channel.response.ChannelCreateResponse;
+import shop.flowchat.team.dto.view.CategoryViewResponse;
 import shop.flowchat.team.service.facade.TeamFacadeService;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Channel Service API")
@@ -26,6 +29,16 @@ public class ChannelController {
             @PathVariable("categoryId") Long categoryId,
             @Valid @RequestBody ChannelCreateRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
         return ApiResponse.success(teamFacadeService.addChannel(teamId, categoryId, request));
+    }
+
+    @Operation(summary = "채널 위치 수정")
+    @PatchMapping("/{channelId}")
+    public ApiResponse<List<CategoryViewResponse>> moveChannel(
+            @PathVariable("teamId") UUID teamId,
+            @PathVariable("categoryId") Long categoryId,
+            @PathVariable("channelId") Long channelId,
+            @Valid @RequestBody ChannelMoveRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
+        return ApiResponse.success(teamFacadeService.moveChannel(teamId, categoryId, channelId, request));
     }
 
     @Operation(summary = "채널 삭제")

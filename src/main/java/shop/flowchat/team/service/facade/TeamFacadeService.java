@@ -10,7 +10,7 @@ import shop.flowchat.team.dto.category.request.CategoryMoveRequest;
 import shop.flowchat.team.dto.category.response.CategoryCreateResponse;
 import shop.flowchat.team.dto.category.response.CategoryResponse;
 import shop.flowchat.team.dto.channel.request.ChannelCreateRequest;
-import shop.flowchat.team.dto.channel.request.ChannelMoverRequest;
+import shop.flowchat.team.dto.channel.request.ChannelMoveRequest;
 import shop.flowchat.team.dto.channel.response.ChannelCreateResponse;
 import shop.flowchat.team.dto.channel.response.ChannelResponse;
 import shop.flowchat.team.dto.member.request.MemberListRequest;
@@ -136,10 +136,7 @@ public class TeamFacadeService {
             if (teamMembers.stream().noneMatch(tm -> tm.getMemberId().equals(memberResponse.requester()))) {
                 throw new AuthorizationException("해당 팀 서버의 회원이 아닙니다.");
             }
-            // 팀 서버 정보 응답
-            TeamResponse teamResponse = TeamResponse.from(teamMembers.get(0).getTeam());
-            // 팀 서버의 카테고리 및 채널 정보 응답
-            List<CategoryViewResponse> categoryViewResponses = getCategoryView(teamMembers.get(0).getTeam());
+            // 팀 멤버들 정보 응답
             List<TeamMemberResponse> teamMemberResponses = teamMembers.stream()
                     .map(teamMember -> TeamMemberResponse.from(
                             teamMember,
@@ -148,6 +145,9 @@ public class TeamFacadeService {
                                     .findFirst()
                                     .orElse(null))) // teamMember와 일치하는 memberResponse가 없는 경우 - 탈퇴한 회원의 경우?
                     .collect(Collectors.toList());
+
+            TeamResponse teamResponse = TeamResponse.from(teamMembers.get(0).getTeam()); // 팀 서버 정보 응답
+            List<CategoryViewResponse> categoryViewResponses = getCategoryView(teamMembers.get(0).getTeam());// 팀 서버의 카테고리 및 채널 정보 응답
             return TeamViewResponse.from(teamResponse, categoryViewResponses, teamMemberResponses);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on getTeamView. [status:%s][message:%s]", e.status(), e.getMessage()));
@@ -171,6 +171,17 @@ public class TeamFacadeService {
     }
 
     @Transactional
+    public TeamResponse updateTeam(String token, UUID teamId, TeamUpdateRequest request) {
+        try {
+            UUID memberId = memberClient.getMemberInfo(token).data().id();
+            Team team = teamService.validateTeamMaster(teamId, memberId);
+            return TeamResponse.from(team.updateTeam(request));
+        } catch (FeignException e) {
+            throw new ExternalServiceException(String.format("Failed to get response on updateTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
+        }
+    }
+
+    @Transactional
     public void modifyTeamMemberRole(String token, UUID teamId, UUID targetId, MemberRole role) {
         try {
             memberClient.getMemberInfo(token).data().id();
@@ -178,6 +189,36 @@ public class TeamFacadeService {
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on modifyTeamMemberRole. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
+    }
+
+    @Transactional
+    public List<CategoryViewResponse> moveCategory(UUID teamId, Long categoryId, CategoryMoveRequest request) {
+        List<Long> categoryIds = Stream.of(request.prevCategoryId(), categoryId, request.nextCategoryId())
+                .filter(id -> id != 0)
+                .collect(Collectors.toList());
+        List<Category> categories = categoryService.validateTeamCategories(teamId, categoryIds);
+        categoryService.moveCategory(categoryId, categories, request);
+        return getCategoryView(categories.get(0).getTeam());
+    }
+
+    @Transactional
+    public List<CategoryViewResponse> moveChannel(UUID teamId, Long categoryId, Long channelId, ChannelMoveRequest request) {
+        // todo: teamId & memberId(token) -> 권한 체크 로직 필요
+        List<Long> categoryIds = Stream.of(categoryId, request.destCategoryId())
+                .distinct() // 중복 제거 - 같은 카테고리내 이동인 경우
+                .collect(Collectors.toList());
+        List<Category> categories = categoryService.validateTeamCategories(teamId, categoryIds);
+        List<Long> channelIds = Stream.of(request.prevChannelId(), channelId, request.nextChannelId())
+                .filter(id -> id != 0)
+                .collect(Collectors.toList());
+        List<Channel> channels = channelService.validateCategoryChannels(categoryIds, channelIds);
+
+        Category destCategory = categories.stream()
+                .filter(c -> c.getId().equals(request.destCategoryId()))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("목적지 카테고리를 찾을 수 없습니다: " + request.destCategoryId()));
+        channelService.moveChannel(channelId, destCategory, channels, request);
+        return getCategoryView(categories.get(0).getTeam()); // todo: 왜 쿼리 나감?
     }
 
     @Transactional
@@ -226,34 +267,9 @@ public class TeamFacadeService {
 
     @Transactional
     public void deleteChannel(UUID teamId, Long categoryId, Long channelId) {
-        // teamId & memberId(token) -> 권한 체크
+        // todo: teamId & memberId(token) -> 권한 체크 로직 필요
         Channel channel = channelService.validateCategoryChannel(categoryId, channelId);
         channelService.deleteChannel(channel);
     }
 
-    @Transactional
-    public TeamResponse updateTeam(String token, UUID teamId, TeamUpdateRequest request) {
-        try {
-            UUID memberId = memberClient.getMemberInfo(token).data().id();
-            Team team = teamService.validateTeamMaster(teamId, memberId);
-            return TeamResponse.from(team.updateTeam(request));
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on updateTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
-        }
-    }
-
-    @Transactional
-    public List<CategoryViewResponse> moveCategory(UUID teamId, Long categoryId, CategoryMoveRequest request) {
-        List<Long> targetIds = Stream.of(request.prevCategoryId(), categoryId, request.nextCategoryId())
-                .filter(id -> id != 0)
-                .collect(Collectors.toList());
-        List<Category> categories = categoryService.validateTeamCategory(teamId, targetIds);
-        categoryService.moveCategory(categoryId, categories, request);
-        return getCategoryView(categories.get(0).getTeam());
-    }
-
-    @Transactional
-    public CategoryViewResponse moveChannel(UUID teamId, Long categoryId, Long channelId, ChannelMoverRequest request) {
-        return null;
-    }
 }

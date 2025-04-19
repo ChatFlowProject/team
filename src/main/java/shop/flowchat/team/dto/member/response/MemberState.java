@@ -24,6 +24,6 @@ public enum MemberState {
         return Arrays.stream(values())
                 .filter(type -> type.toString().equals(state) || type.getName().equals(state)) // toString: ONLINE, IDLE... / name: 온라인, 자리비움...
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("옳바르지 않은 회원 상태입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("올바르지 않은 회원 상태입니다."));
     }
 }

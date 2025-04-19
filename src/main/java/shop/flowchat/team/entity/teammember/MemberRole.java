@@ -24,7 +24,7 @@ public enum MemberRole {
         return Arrays.stream(values())
                 .filter(t -> t.toString().equals(type))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("옳바르지 않은 회원 권한 유형입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("올바르지 않은 회원 권한 유형입니다."));
     }
 
 }

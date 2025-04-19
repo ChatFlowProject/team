@@ -46,19 +46,19 @@ public class CategoryService {
     public Category validateTeamCategory(UUID teamId, Long categoryId) {
         Category category = getCategoryById(categoryId);
         if (!category.getTeam().getId().equals(teamId)) {
-            throw new AuthorizationException("카테고리가 위치한 팀 ID와 일치하지 않습니다.");
+            throw new AuthorizationException("카테고리의 팀 ID가 올바르지 않습니다.");
         }
         return category;
     }
 
     @Transactional(readOnly = true)
-    public List<Category> validateTeamCategory(UUID teamId, List<Long> categoryIds) {
+    public List<Category> validateTeamCategories(UUID teamId, List<Long> categoryIds) {
         List<Category> categories = categoryRepository.findByIdIn(categoryIds);
         if(categories.size() != categoryIds.size()) {
-            throw new EntityNotFoundException("존재하지 않는 카테고리입니다.");
+            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
         }
         if(categories.stream().anyMatch(category -> !category.getTeam().getId().equals(teamId))) {
-            throw new AuthorizationException("카테고리가 위치한 팀 ID와 일치하지 않는 카테고리가 있습니다.");
+            throw new AuthorizationException("카테고리의 팀 ID가 올바르지 않습니다.");
         }
         return categories;
     }

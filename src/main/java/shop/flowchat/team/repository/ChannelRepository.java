@@ -10,6 +10,9 @@ import shop.flowchat.team.entity.channel.Channel;
 import java.util.List;
 
 public interface ChannelRepository extends JpaRepository<Channel, Long> {
+    @Query("SELECT c FROM Channel c JOIN FETCH c.category WHERE c.id IN :channelIds")
+    List<Channel> findByIdIn(@Param("channelIds") List<Long> channelIds);
+
     @Query("SELECT c FROM Channel c JOIN FETCH c.category WHERE c.category.id IN :categoryIds")
     List<Channel> findByCategoryIdIn(@Param("categoryIds") List<Long> categoryIds);
 

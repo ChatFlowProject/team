@@ -47,6 +47,6 @@ public class Category extends BaseEntity {
     }
 
     public void movePositionBetween(Double positionA, Double positionB) {
-        position = (positionA + positionB)/2;
+        this.position = (positionA + positionB)/2;
     }
 }

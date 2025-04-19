@@ -52,7 +52,8 @@ public class Channel extends BaseEntity {
                 .build();
     }
 
-    public void movePositionBetween(Double positionA, Double positionB) {
-        position = (positionA + positionB)/2;
+    public void movePosition(Category category, Double positionA, Double positionB) {
+        this.category = category;
+        this.position = (positionA + positionB)/2;
     }
 }
