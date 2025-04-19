@@ -57,10 +57,9 @@ public class CategoryService {
         if(categories.size() != categoryIds.size()) {
             throw new EntityNotFoundException("존재하지 않는 카테고리입니다.");
         }
-        categories.stream()
-                .filter(category -> !category.getTeam().getId().equals(teamId))
-                .findAny()
-                .orElseThrow(() -> new AuthorizationException("카테고리가 위치한 팀 ID와 일치하지 않습니다."));
+        if(categories.stream().anyMatch(category -> !category.getTeam().getId().equals(teamId))) {
+            throw new AuthorizationException("카테고리가 위치한 팀 ID와 일치하지 않는 카테고리가 있습니다.");
+        }
         return categories;
     }
 
@@ -84,9 +83,9 @@ public class CategoryService {
         Category nextCategory = categoryMap.get(request.nextCategoryId());
 
         if (request.nextCategoryId() == 0) {
-            movingCategory.movePositionBetween(prevCategory.getPosition(), 0.0);
+            movingCategory.movePositionBetween(prevCategory.getPosition(), prevCategory.getPosition() + 2000.0);
         } else if (request.prevCategoryId() == 0) {
-            movingCategory.movePositionBetween(2000.0, nextCategory.getPosition());
+            movingCategory.movePositionBetween(0.0, nextCategory.getPosition());
         } else {
             movingCategory.movePositionBetween(prevCategory.getPosition(), nextCategory.getPosition());
         }

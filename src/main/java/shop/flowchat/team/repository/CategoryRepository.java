@@ -14,7 +14,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("SELECT c FROM Category c JOIN FETCH c.team WHERE c.id = :categoryId")
     Optional<Category> findById(@Param("categoryId") Long categoryId);
 
-    @Query("SELECT c FROM Category c JOIN FETCH c.team WHERE c.id IN :categoryId")
+    @Query("SELECT c FROM Category c JOIN FETCH c.team WHERE c.id IN :categoryIds")
     List<Category> findByIdIn(@Param("categoryIds") List<Long> categoryIds);
 
     @Query("SELECT COALESCE(MAX(c.position), 0) FROM Category c WHERE c.team.id = :teamId")
