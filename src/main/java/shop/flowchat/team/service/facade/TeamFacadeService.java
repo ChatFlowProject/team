@@ -6,9 +6,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.flowchat.team.dto.category.request.CategoryCreateRequest;
+import shop.flowchat.team.dto.category.request.CategoryMoveRequest;
 import shop.flowchat.team.dto.category.response.CategoryCreateResponse;
 import shop.flowchat.team.dto.category.response.CategoryResponse;
 import shop.flowchat.team.dto.channel.request.ChannelCreateRequest;
+import shop.flowchat.team.dto.channel.request.ChannelMoverRequest;
 import shop.flowchat.team.dto.channel.response.ChannelCreateResponse;
 import shop.flowchat.team.dto.channel.response.ChannelResponse;
 import shop.flowchat.team.dto.member.request.MemberListRequest;
@@ -41,6 +43,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
@@ -133,21 +136,10 @@ public class TeamFacadeService {
             if (teamMembers.stream().noneMatch(tm -> tm.getMemberId().equals(memberResponse.requester()))) {
                 throw new AuthorizationException("해당 팀 서버의 회원이 아닙니다.");
             }
-            // 팀 서버의 카테고리 및 채널 조회
-            List<Category> categories = categoryService.getCategoryByTeam(teamMembers.get(0).getTeam());
-            List<Channel> channels = channelService.getChannelByCategoryIds(
-                    categories.stream().map(Category::getId).toList());
-            // TeamViewResponse 데이터 파싱 및 반환
+            // 팀 서버 정보 응답
             TeamResponse teamResponse = TeamResponse.from(teamMembers.get(0).getTeam());
-            List<CategoryViewResponse> categoryViewResponses = categories.stream()
-                    .map(category -> CategoryViewResponse.from(
-                            CategoryResponse.from(category),
-                            channels.stream()
-                                    .filter(channel -> channel.getCategory().getId().equals(category.getId()))
-                                    .map(ChannelResponse::from)
-                                    .sorted(Comparator.comparing(ChannelResponse::position))// position 오름차순 정렬
-                                    .collect(Collectors.toList())))
-                    .collect(Collectors.toList());
+            // 팀 서버의 카테고리 및 채널 정보 응답
+            List<CategoryViewResponse> categoryViewResponses = getCategoryView(teamMembers.get(0).getTeam());
             List<TeamMemberResponse> teamMemberResponses = teamMembers.stream()
                     .map(teamMember -> TeamMemberResponse.from(
                             teamMember,
@@ -160,6 +152,22 @@ public class TeamFacadeService {
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on getTeamView. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryViewResponse> getCategoryView(Team team) {
+        List<Category> categories = categoryService.getCategoryByTeam(team);
+        List<Channel> channels = channelService.getChannelByCategoryIds(
+                categories.stream().map(Category::getId).toList());
+        return categories.stream()
+                .map(category -> CategoryViewResponse.from(
+                        CategoryResponse.from(category),
+                        channels.stream()
+                                .filter(channel -> channel.getCategory().getId().equals(category.getId()))
+                                .map(ChannelResponse::from)
+                                .sorted(Comparator.comparing(ChannelResponse::position))// position 오름차순 정렬
+                                .collect(Collectors.toList())))
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -234,4 +242,18 @@ public class TeamFacadeService {
         }
     }
 
+    @Transactional
+    public List<CategoryViewResponse> moveCategory(UUID teamId, Long categoryId, CategoryMoveRequest request) {
+        List<Long> targetIds = Stream.of(request.prevCategoryId(), categoryId, request.nextCategoryId())
+                .filter(id -> id != 0)
+                .collect(Collectors.toList());
+        List<Category> categories = categoryService.validateTeamCategory(teamId, targetIds);
+        categoryService.moveCategory(categoryId, categories, request);
+        return getCategoryView(categories.get(0).getTeam());
+    }
+
+    @Transactional
+    public CategoryViewResponse moveChannel(UUID teamId, Long categoryId, Long channelId, ChannelMoverRequest request) {
+        return null;
+    }
 }

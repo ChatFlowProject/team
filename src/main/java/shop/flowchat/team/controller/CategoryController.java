@@ -7,9 +7,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.dto.ApiResponse;
 import shop.flowchat.team.dto.category.request.CategoryCreateRequest;
+import shop.flowchat.team.dto.category.request.CategoryMoveRequest;
 import shop.flowchat.team.dto.category.response.CategoryCreateResponse;
+import shop.flowchat.team.dto.view.CategoryViewResponse;
 import shop.flowchat.team.service.facade.TeamFacadeService;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Category Service API")
@@ -25,6 +28,15 @@ public class CategoryController {
             @PathVariable("teamId") UUID teamId,
             @Valid @RequestBody CategoryCreateRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
         return ApiResponse.success(teamFacadeService.addCategory(teamId, request));
+    }
+
+    @Operation(summary = "카테고리 위치 수정")
+    @PatchMapping("/{categoryId}")
+    public ApiResponse<List<CategoryViewResponse>> moveCategory(
+            @PathVariable("teamId") UUID teamId,
+            @PathVariable("categoryId") Long categoryId,
+            @Valid @RequestBody CategoryMoveRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
+        return ApiResponse.success(teamFacadeService.moveCategory(teamId, categoryId, request));
     }
 
     @Operation(summary = "카테고리 삭제")
