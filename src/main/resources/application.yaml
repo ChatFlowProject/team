@@ -19,9 +19,9 @@ spring:
       dialect: org.hibernate.dialect.MySQL8InnoDBDialect
   kafka:
     bootstrap-servers:
-      - "kafka-0.kafka-headless:9092"
-      - "kafka-1.kafka-headless:9092"
-      - "kafka-2.kafka-headless:9092"
+      - "kafka-controller-0.kafka-controller-headless.kafka.svc.cluster.local:9092"
+      - "kafka-controller-1.kafka-controller-headless.kafka.svc.cluster.local:9092"
+      - "kafka-controller-2.kafka-controller-headless.kafka.svc.cluster.local:9092"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
