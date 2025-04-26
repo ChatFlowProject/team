@@ -18,7 +18,10 @@ spring:
       hibernate.format_sql: true
       dialect: org.hibernate.dialect.MySQL8InnoDBDialect
   kafka:
-    bootstrap-servers: "kafka-controller-headless.kafka.svc:9092"
+    bootstrap-servers: "kafka-controller-headless.kafka.svc.cluster.local:9092"
+    properties:
+      security.protocol: PLAINTEXT  # 프로토콜 명시
+      # client.id: spring-kafka-client  # (옵션) 클라이언트 ID 지정
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
