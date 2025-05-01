@@ -8,6 +8,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -27,7 +28,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({IllegalArgumentException.class,
             NoSuchElementException.class,
             DateTimeParseException.class,
-            HttpMessageNotReadableException.class}
+            HttpMessageNotReadableException.class,
+            MissingRequestHeaderException.class}
     )
     public ResponseEntity<ErrorResponse> handleCommonException(Exception e) {
         final ErrorResponse response = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, e.getMessage());
@@ -107,7 +109,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        log.error("handleException: {}", e.getMessage());
+        log.error("{}: {}", e.getClass(), e.getMessage());
         final ErrorResponse response = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
