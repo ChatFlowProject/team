@@ -26,13 +26,21 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      transactional.id: "team-transaction"
+#      enable.idempotence: true # true 시 중복 전송 방지, acks=all과 함께 사용, 3.0부터 true가 default
+#      acks: "all" # all 이 default
     consumer:
       group-id: "team-service-group"
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      isolation-level: read_committed
+#      enable-auto-commit: true
     streams:
       application-id: "team-streams-app"
+      processing.guarantee: exactly_once_v2  # default: at_least_once
+#      properties:
+#        commit.interval.ms: 100  # 트랜잭션 커밋 주기, exactly_once_v2 사용 시 권장 값 100ms (default가 100ms임)
 
 feign:
   chatflow:
