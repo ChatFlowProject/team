@@ -19,7 +19,7 @@ public class MemberEventConsumer {
     private final MemberReadModelUpdater updater;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @KafkaListener(topics = "member-events", groupId = "member-read-model")
+    @KafkaListener(topics = "member") // groupId는 글로벌 group-id 설정으로 통일
     public void consume(ConsumerRecord<String, String> record) {
         try {
             OutboxEvent<MemberEventPayload> event = parse(record.value());
