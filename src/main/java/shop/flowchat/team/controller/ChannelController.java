@@ -5,11 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import shop.flowchat.team.dto.ApiResponse;
-import shop.flowchat.team.dto.channel.request.ChannelCreateRequest;
-import shop.flowchat.team.dto.channel.request.ChannelMoveRequest;
-import shop.flowchat.team.dto.channel.response.ChannelCreateResponse;
-import shop.flowchat.team.dto.view.CategoryViewResponse;
+import shop.flowchat.team.controller.dto.ApiResponse;
+import shop.flowchat.team.controller.dto.channel.request.ChannelCreateRequest;
+import shop.flowchat.team.controller.dto.channel.request.ChannelMoveRequest;
+import shop.flowchat.team.controller.dto.channel.response.ChannelCreateResponse;
+import shop.flowchat.team.controller.dto.view.CategoryViewResponse;
 import shop.flowchat.team.service.facade.TeamFacadeService;
 
 import java.util.List;

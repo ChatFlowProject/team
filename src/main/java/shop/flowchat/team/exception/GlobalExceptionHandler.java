@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-import shop.flowchat.team.exception.common.AuthorizationException;
-import shop.flowchat.team.exception.common.EntityNotFoundException;
-import shop.flowchat.team.exception.common.ExternalServiceException;
+import shop.flowchat.team.exception.custom.AuthorizationException;
+import shop.flowchat.team.exception.custom.EntityNotFoundException;
+import shop.flowchat.team.exception.custom.ExternalServiceException;
 
 import java.time.format.DateTimeParseException;
 import java.util.NoSuchElementException;

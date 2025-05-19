@@ -6,12 +6,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import shop.flowchat.team.dto.ApiResponse;
-import shop.flowchat.team.dto.team.request.TeamCreateRequest;
-import shop.flowchat.team.dto.team.request.TeamUpdateRequest;
-import shop.flowchat.team.dto.team.response.TeamCreateResponse;
-import shop.flowchat.team.dto.team.response.TeamResponse;
-import shop.flowchat.team.dto.view.TeamViewResponse;
+import shop.flowchat.team.controller.dto.ApiResponse;
+import shop.flowchat.team.controller.dto.team.request.TeamCreateRequest;
+import shop.flowchat.team.controller.dto.team.request.TeamUpdateRequest;
+import shop.flowchat.team.controller.dto.team.response.TeamCreateResponse;
+import shop.flowchat.team.controller.dto.team.response.TeamResponse;
+import shop.flowchat.team.controller.dto.view.TeamViewResponse;
 import shop.flowchat.team.service.facade.TeamFacadeService;
 
 import java.util.List;

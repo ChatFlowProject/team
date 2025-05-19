@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import shop.flowchat.team.entity.team.Team;
-import shop.flowchat.team.entity.teammember.MemberRole;
-import shop.flowchat.team.entity.teammember.TeamMember;
-import shop.flowchat.team.exception.common.EntityNotFoundException;
-import shop.flowchat.team.repository.TeamMemberRepository;
+import shop.flowchat.team.domain.model.team.Team;
+import shop.flowchat.team.domain.model.teammember.MemberRole;
+import shop.flowchat.team.domain.model.teammember.TeamMember;
+import shop.flowchat.team.exception.custom.EntityNotFoundException;
+import shop.flowchat.team.infrastructure.repository.TeamMemberRepository;
 
 import java.util.List;
 import java.util.UUID;

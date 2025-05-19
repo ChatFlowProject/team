@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import shop.flowchat.team.dto.ApiResponse;
-import shop.flowchat.team.service.integration.S3ImageService;
+import shop.flowchat.team.controller.dto.ApiResponse;
+import shop.flowchat.team.infrastructure.s3.S3ImageService;
 
 @Tag(name = "Image Service API")
 @RequiredArgsConstructor

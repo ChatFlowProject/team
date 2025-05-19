@@ -6,9 +6,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import shop.flowchat.team.dto.ApiResponse;
-import shop.flowchat.team.dto.teammember.request.TeamMemberModifyRoleRequest;
-import shop.flowchat.team.entity.teammember.MemberRole;
+import shop.flowchat.team.controller.dto.ApiResponse;
+import shop.flowchat.team.controller.dto.teammember.request.TeamMemberModifyRoleRequest;
+import shop.flowchat.team.domain.model.teammember.MemberRole;
 import shop.flowchat.team.service.facade.TeamFacadeService;
 
 import java.util.UUID;
