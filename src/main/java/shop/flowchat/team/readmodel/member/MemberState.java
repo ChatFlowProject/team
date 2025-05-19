@@ -10,7 +10,7 @@ import java.util.Arrays;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public enum MemberReadModelState {
+public enum MemberState {
     ONLINE("온라인"),
     IDLE("자리비움"),
     DO_NOT_DISTURB("방해금지"),
@@ -19,7 +19,7 @@ public enum MemberReadModelState {
     private String name;
 
     @JsonCreator
-    public static MemberReadModelState of(final String parameter) {
+    public static MemberState of(final String parameter) {
         String state = parameter.toUpperCase(); // 특문 포함 모든 문자 동작됨
         return Arrays.stream(values())
                 .filter(type -> type.toString().equals(state) || type.getName().equals(state)) // toString: ONLINE, IDLE... / name: 온라인, 자리비움...

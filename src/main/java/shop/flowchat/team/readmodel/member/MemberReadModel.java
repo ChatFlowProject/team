@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.flowchat.team.domain.BaseEntity;
+import shop.flowchat.team.infrastructure.messaging.member.MemberEventPayload;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -15,41 +16,42 @@ import java.util.UUID;
 @Entity
 public class MemberReadModel extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
-    @Column(nullable = false, length = 20, unique = true)
     private String nickname;
-    @Column(nullable = false, length = 20)
     private String name;
     private String avatarUrl;
     @Enumerated(EnumType.STRING)
-    private MemberReadModelState state;
-
+    private MemberState state;
 
     @Builder
-    private MemberReadModel(String nickname, String name, LocalDate birth, String avatarUrl, MemberReadModelState state) {
+    private MemberReadModel(UUID id, String nickname, String name, LocalDate birth, String avatarUrl, MemberState state) {
+        this.id = id;
         this.nickname = nickname;
         this.name = name;
         this.avatarUrl = avatarUrl;
         this.state = state;
     }
 
-//    public static Member create(SignUpRequest request, PasswordEncoder encoder) {
-//        return Member.builder()
-//                .nickname(payload.nickname())
-//                .name(payload.name())
-//                .avatarUrl()
-//                .state(MemberState.OFFLINE)
-//                .build();
-//    }
-//
-//    public void update(MemberUpdateRequest newMember, PasswordEncoder encoder) {
-//        this.birth = LocalDate.parse(newMember.birth(), DateTimeFormatter.ISO_LOCAL_DATE);
-//        this.avatar = newMember.avatarUrl();
-//    }
-//
-//    public MemberState modifyState(MemberState state) {
-//        return this.state = state;
-//    }
+    public static MemberReadModel create(MemberEventPayload payload) {
+        return MemberReadModel.builder()
+                .id(payload.id())
+                .nickname(payload.nickname())
+                .name(payload.name())
+                .avatarUrl(payload.avatarUrl())
+                .state(payload.state())
+                .build();
+    }
+
+    public void update(MemberEventPayload payload) {
+        this.nickname = payload.nickname();
+        this.name = payload.name();
+        this.avatarUrl = payload.avatarUrl();
+        this.state = payload.state();
+    }
+
+    public MemberState changeState(MemberState state) {
+        return this.state = state;
+    }
 
 }
