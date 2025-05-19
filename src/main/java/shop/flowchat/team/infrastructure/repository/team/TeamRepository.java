@@ -1,4 +1,4 @@
-package shop.flowchat.team.infrastructure.repository;
+package shop.flowchat.team.infrastructure.repository.team;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import shop.flowchat.team.domain.team.Team;

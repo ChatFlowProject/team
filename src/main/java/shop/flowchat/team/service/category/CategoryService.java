@@ -10,7 +10,7 @@ import shop.flowchat.team.domain.category.Category;
 import shop.flowchat.team.domain.team.Team;
 import shop.flowchat.team.common.exception.custom.AuthorizationException;
 import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
-import shop.flowchat.team.infrastructure.repository.CategoryRepository;
+import shop.flowchat.team.infrastructure.repository.category.CategoryRepository;
 
 import java.util.List;
 import java.util.Map;

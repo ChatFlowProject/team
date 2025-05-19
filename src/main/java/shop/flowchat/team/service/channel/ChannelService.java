@@ -11,7 +11,7 @@ import shop.flowchat.team.domain.category.Category;
 import shop.flowchat.team.domain.channel.Channel;
 import shop.flowchat.team.common.exception.custom.AuthorizationException;
 import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
-import shop.flowchat.team.infrastructure.repository.ChannelRepository;
+import shop.flowchat.team.infrastructure.repository.channel.ChannelRepository;
 
 import java.util.List;
 import java.util.Map;

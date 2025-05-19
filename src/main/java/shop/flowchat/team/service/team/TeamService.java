@@ -8,7 +8,7 @@ import shop.flowchat.team.presentation.dto.team.request.TeamCreateRequest;
 import shop.flowchat.team.domain.team.Team;
 import shop.flowchat.team.common.exception.custom.AuthorizationException;
 import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
-import shop.flowchat.team.infrastructure.repository.TeamRepository;
+import shop.flowchat.team.infrastructure.repository.team.TeamRepository;
 
 import java.util.UUID;
 
