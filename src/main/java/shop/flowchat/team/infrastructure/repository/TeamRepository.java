@@ -1,7 +1,7 @@
 package shop.flowchat.team.infrastructure.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import shop.flowchat.team.domain.model.team.Team;
+import shop.flowchat.team.domain.team.Team;
 
 import java.util.UUID;
 

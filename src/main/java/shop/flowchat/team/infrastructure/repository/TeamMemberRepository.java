@@ -3,8 +3,8 @@ package shop.flowchat.team.infrastructure.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import shop.flowchat.team.domain.model.team.Team;
-import shop.flowchat.team.domain.model.teammember.TeamMember;
+import shop.flowchat.team.domain.team.Team;
+import shop.flowchat.team.domain.teammember.TeamMember;
 
 import java.util.List;
 import java.util.Optional;

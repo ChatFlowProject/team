@@ -2,10 +2,10 @@ package shop.flowchat.team.infrastructure.feign;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-import shop.flowchat.team.controller.dto.ApiResponse;
-import shop.flowchat.team.controller.dto.member.request.MemberListRequest;
-import shop.flowchat.team.controller.dto.member.response.MemberInfoResponse;
-import shop.flowchat.team.controller.dto.member.response.MemberResponse;
+import shop.flowchat.team.presentation.dto.ApiResponse;
+import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
+import shop.flowchat.team.presentation.dto.member.response.MemberInfoResponse;
+import shop.flowchat.team.presentation.dto.member.response.MemberResponse;
 
 import java.util.UUID;
 

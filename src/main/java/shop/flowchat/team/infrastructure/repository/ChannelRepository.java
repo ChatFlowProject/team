@@ -4,8 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import shop.flowchat.team.domain.model.category.Category;
-import shop.flowchat.team.domain.model.channel.Channel;
+import shop.flowchat.team.domain.category.Category;
+import shop.flowchat.team.domain.channel.Channel;
 
 import java.util.List;
 
