@@ -1,19 +1,17 @@
 package shop.flowchat.team.infrastructure.outbox.event;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+@Data
+@NoArgsConstructor
 @AllArgsConstructor
-public abstract class OutboxEvent<T> {
+public class OutboxEvent<T> {
     private String aggregateType;
     private String aggregateId;
     private String eventType;
     private T payload;
     private String eventId;
-
-    public void setEventId(String  eventId) {
-        this.eventId = eventId;
-    }
 
 }
