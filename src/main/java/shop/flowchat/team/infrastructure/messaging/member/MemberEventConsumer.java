@@ -1,6 +1,5 @@
 package shop.flowchat.team.infrastructure.messaging.member;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +7,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
-import shop.flowchat.team.infrastructure.outbox.event.OutboxEvent;
 import shop.flowchat.team.readmodel.member.MemberReadModelUpdater;
 
 @Slf4j
@@ -41,6 +39,7 @@ public class MemberEventConsumer {
             }
 
         } catch (Exception e) {
+            // 예외 발생시 offset commit되지 않음 -> 따라서 위의 이벤트 처리 로직(switch문)은 unique키를 이용하거나 upsert 방식을 사용하여 데이터를 처리해야 함
             log.error("Failed to consume event", e);
         }
     }

@@ -32,4 +32,5 @@ public class MemberReadModelUpdater {
         repository.findById(memberId)
                 .ifPresent(member -> member.changeState(state));
     }
+
 }
