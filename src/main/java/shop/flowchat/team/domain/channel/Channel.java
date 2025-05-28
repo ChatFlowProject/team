@@ -9,6 +9,8 @@ import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.domain.BaseEntity;
 import shop.flowchat.team.domain.category.Category;
 
+import java.util.UUID;
+
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -25,7 +27,7 @@ public class Channel extends BaseEntity {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @Column(nullable = false)
@@ -33,16 +35,20 @@ public class Channel extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ChannelType type;
+    private ChannelType channelType;
 
-    private String chatId;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChannelAccessType accessType;
+
+    private UUID chatId;
 
     @Builder
-    private Channel(String name, Category category, Double position, ChannelType type) {
+    private Channel(String name, Category category, Double position, ChannelType channelType) {
         this.name = name;
         this.category = category;
         this.position = position;
-        this.type = type;
+        this.channelType = channelType;
     }
 
     public static Channel from(ChannelCreateRequest request, Category category) {
@@ -50,7 +56,7 @@ public class Channel extends BaseEntity {
                 .name(request.name())
                 .category(category)
                 .position(1000.0)
-                .type(ChannelType.of(request.channelType()))
+                .channelType(ChannelType.of(request.channelType()))
                 .build();
     }
 

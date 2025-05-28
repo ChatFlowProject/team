@@ -20,7 +20,7 @@ public record ChannelResponse(
                 channel.getId(),
                 channel.getName(),
                 channel.getPosition(),
-                channel.getType()
+                channel.getChannelType()
         );
     }
 }
