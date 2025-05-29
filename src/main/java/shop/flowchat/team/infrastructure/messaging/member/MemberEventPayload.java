@@ -1,6 +1,5 @@
 package shop.flowchat.team.infrastructure.messaging.member;
 
-import shop.flowchat.team.readmodel.member.MemberReadModel;
 import shop.flowchat.team.readmodel.member.MemberState;
 
 import java.time.LocalDateTime;
@@ -14,14 +13,4 @@ public record MemberEventPayload(
         MemberState state,
         LocalDateTime createdAt
 ) {
-    public static MemberEventPayload from(MemberReadModel member) {
-        return new MemberEventPayload(
-                member.getId(),
-                member.getNickname(),
-                member.getName(),
-                member.getAvatarUrl(),
-                member.getState(),
-                member.getCreatedAt()
-        );
-    }
 }
