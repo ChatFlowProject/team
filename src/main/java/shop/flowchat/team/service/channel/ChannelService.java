@@ -25,7 +25,7 @@ public class ChannelService {
 
     @Transactional
     public Channel createChannel(ChannelCreateRequest request, Category category) {
-        Channel channel = Channel.from(request, category);
+        Channel channel = Channel.fromTeam(request, category);
         Double maxPosition = channelRepository.findMaxPositionByCategoryId(category.getId());
         channel.movePosition(category, maxPosition, maxPosition + 2000.0);
         try {

@@ -26,7 +26,7 @@ public class Channel extends BaseEntity {
     @Column(nullable = false, length = 20)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // nullable -> PRIVATE AccessType일 경우 DM 채널이므로
     @JoinColumn(name = "category_id")
     private Category category;
 
@@ -34,29 +34,32 @@ public class Channel extends BaseEntity {
     private Double position;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private ChannelType channelType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private ChannelAccessType accessType;
 
+    // @Column(nullable = false)
     private UUID chatId;
 
     @Builder
-    private Channel(String name, Category category, Double position, ChannelType channelType) {
+    private Channel(String name, Category category, Double position, ChannelType channelType, ChannelAccessType accessType) {
         this.name = name;
         this.category = category;
         this.position = position;
         this.channelType = channelType;
+        this.accessType = accessType;
     }
 
-    public static Channel from(ChannelCreateRequest request, Category category) {
+    public static Channel fromTeam(ChannelCreateRequest request, Category category) {
         return Channel.builder()
                 .name(request.name())
                 .category(category)
                 .position(1000.0)
                 .channelType(ChannelType.of(request.channelType()))
+                .accessType(ChannelAccessType.PUBLIC)
                 .build();
     }
 

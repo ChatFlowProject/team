@@ -22,7 +22,7 @@ import java.util.UUID;
 public class ChannelController {
     private final TeamFacadeService teamFacadeService;
 
-    @Operation(summary = "채널 생성")
+    @Operation(summary = "팀에 채널 생성")
     @PostMapping
     public ApiResponse<ChannelCreateResponse> createChannel(
             @PathVariable("teamId") UUID teamId,
@@ -31,7 +31,7 @@ public class ChannelController {
         return ApiResponse.success(teamFacadeService.addChannel(teamId, categoryId, request));
     }
 
-    @Operation(summary = "채널 위치 수정")
+    @Operation(summary = "팀의 채널 위치 수정")
     @PatchMapping("/{channelId}")
     public ApiResponse<List<CategoryViewResponse>> moveChannel(
             @PathVariable("teamId") UUID teamId,
@@ -41,7 +41,7 @@ public class ChannelController {
         return ApiResponse.success(teamFacadeService.moveChannel(teamId, categoryId, channelId, request));
     }
 
-    @Operation(summary = "채널 삭제")
+    @Operation(summary = "팀의 채널 삭제")
     @DeleteMapping("/{channelId}")
     public ApiResponse deleteCategory(
             @PathVariable("teamId") UUID teamId,
