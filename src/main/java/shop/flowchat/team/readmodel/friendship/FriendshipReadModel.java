@@ -27,7 +27,8 @@ import java.util.UUID;
 public class FriendshipReadModel extends BaseEntity {
 
     @Id
-    private Long id;
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID id;
 
     @Column(nullable = false, columnDefinition = "BINARY(16)")
     private UUID fromMemberId;
@@ -36,7 +37,7 @@ public class FriendshipReadModel extends BaseEntity {
     private UUID toMemberId;
 
     @Builder
-    private FriendshipReadModel(Long id, UUID fromMemberId, UUID toMemberId) {
+    private FriendshipReadModel(UUID id, UUID fromMemberId, UUID toMemberId) {
         this.id = id;
         this.fromMemberId = fromMemberId;
         this.toMemberId = toMemberId;
@@ -48,12 +49,6 @@ public class FriendshipReadModel extends BaseEntity {
                 .fromMemberId(payload.fromMemberId())
                 .toMemberId(payload.toMemberId())
                 .build();
-    }
-
-    public void update(FriendshipEventPayload payload) {
-        this.id = payload.id();
-        this.fromMemberId = payload.fromMemberId();
-        this.toMemberId = payload.toMemberId();
     }
 
 }

@@ -12,14 +12,9 @@ public class FriendshipReadModelUpdater {
 
     @Transactional
     public void upsert(FriendshipEventPayload payload) {
-        upsertOneDirection(payload);
-        upsertOneDirection(FriendshipEventPayload.from(payload.id(), payload.toMemberId(), payload.fromMemberId()));
-    }
-
-    private void upsertOneDirection(FriendshipEventPayload payload) {
         repository.findByFromMemberIdAndToMemberId(payload.fromMemberId(), payload.toMemberId())
                 .ifPresentOrElse(
-                        existingFriendship -> existingFriendship.update(payload),
+                        existingFriendship -> {},
                         () -> repository.save(FriendshipReadModel.create(payload))
                 );
     }
@@ -27,7 +22,6 @@ public class FriendshipReadModelUpdater {
     @Transactional
     public void delete(FriendshipEventPayload payload) {
         repository.deleteByFromMemberIdAndToMemberId(payload.fromMemberId(), payload.toMemberId());
-        repository.deleteByFromMemberIdAndToMemberId(payload.toMemberId(), payload.fromMemberId());
     }
 
 }
