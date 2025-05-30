@@ -7,7 +7,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
 @SpringBootTest
-@ActiveProfiles("dev") // "dev" 프로파일에서만 테스트 코드 실행됨
+@ActiveProfiles("test") // "test" 프로파일에서만 테스트 코드 실행됨
 class TeamApplicationTests {
 
     @Test

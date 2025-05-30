@@ -18,6 +18,6 @@ spring:
       hibernate.format_sql: true
       dialect: org.hibernate.dialect.H2Dialect
 
-feign:
-  chatflow:
-    member: http://dev.flowchat.shop:30002
+chatflow:
+  http-url: http://test.flowchat.shop:30100
+  https-url: https://test.flowchat.shop:30200

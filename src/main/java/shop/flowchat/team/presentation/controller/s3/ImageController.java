@@ -14,7 +14,7 @@ import shop.flowchat.team.infrastructure.s3.S3ImageService;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/images")
-@Profile("prod")
+@Profile("!test")
 public class ImageController {
     private final S3ImageService s3ImageService;
 

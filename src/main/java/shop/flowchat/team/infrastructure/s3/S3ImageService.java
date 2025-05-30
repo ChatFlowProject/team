@@ -30,7 +30,7 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-@Profile("prod")
+@Profile("!test")
 public class S3ImageService {
 
     private final AmazonS3 amazonS3;

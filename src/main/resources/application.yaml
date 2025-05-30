@@ -1,6 +1,13 @@
 server:
   port: 8080
 
+tag:
+  version: 1.0.0 # ${VERSION}
+
+chatflow:
+  http-url: ${CHATFLOW_HTTP_URL}
+  https-url: ${CHATFLOW_HTTPS_URL}
+
 spring:
   profiles:
     active: ${PROFILE_ACTIVE}
@@ -42,10 +49,6 @@ spring:
 #      properties:
 #        commit.interval.ms: 100  # 트랜잭션 커밋 주기, exactly_once_v2 사용 시 권장 값 100ms (default가 100ms임)
 
-feign:
-  chatflow:
-    member: ${MEMBER_SERVICE_URL}
-
 cloud:
   aws:
     s3:
@@ -73,6 +76,3 @@ springdoc:
     path: /teams/v3/api-docs
     groups:
       enabled: true
-
-tag:
-  version: 1.0.0
