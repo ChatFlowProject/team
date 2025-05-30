@@ -1,20 +1,24 @@
 package shop.flowchat.team.service.channel;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
-import shop.flowchat.team.presentation.dto.channel.request.ChannelMoveRequest;
-import shop.flowchat.team.domain.category.Category;
-import shop.flowchat.team.domain.channel.Channel;
 import shop.flowchat.team.common.exception.custom.AuthorizationException;
 import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
+import shop.flowchat.team.common.exception.custom.ExternalServiceException;
+import shop.flowchat.team.domain.category.Category;
+import shop.flowchat.team.domain.channel.Channel;
+import shop.flowchat.team.infrastructure.feign.DialogClient;
 import shop.flowchat.team.infrastructure.repository.channel.ChannelRepository;
+import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
+import shop.flowchat.team.presentation.dto.channel.request.ChannelMoveRequest;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -22,18 +26,22 @@ import java.util.stream.Collectors;
 @Service
 public class ChannelService {
     private final ChannelRepository channelRepository;
+    private final DialogClient dialogClient;
 
     @Transactional
     public Channel createChannel(ChannelCreateRequest request, Category category) {
-        Channel channel = Channel.fromTeam(request, category);
-        Double maxPosition = channelRepository.findMaxPositionByCategoryId(category.getId());
-        channel.movePosition(category, maxPosition, maxPosition + 2000.0);
         try {
+            UUID chatId = dialogClient.createChat().data().chatId();
+            Channel channel = Channel.fromTeam(request, category, chatId);
+            Double maxPosition = channelRepository.findMaxPositionByCategoryId(category.getId());
+            channel.movePosition(category, maxPosition, maxPosition + 2000.0);
             channelRepository.save(channel);
+            return channel;
+        } catch (FeignException e) {
+            throw new ExternalServiceException(String.format("Failed to get response on createChannel. [status:%s][message:%s]", e.status(), e.getMessage()));
         } catch (DataIntegrityViolationException e) {
             throw new IllegalArgumentException("입력값이 잘못되었습니다.");
         }
-        return channel;
     }
 
     @Transactional(readOnly = true)

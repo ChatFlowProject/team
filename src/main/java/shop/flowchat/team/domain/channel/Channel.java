@@ -41,25 +41,27 @@ public class Channel extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private ChannelAccessType accessType;
 
-    // @Column(nullable = false)
+    @Column(nullable = false)
     private UUID chatId;
 
     @Builder
-    private Channel(String name, Category category, Double position, ChannelType channelType, ChannelAccessType accessType) {
+    private Channel(String name, Category category, Double position, ChannelType channelType, ChannelAccessType accessType, UUID chatId) {
         this.name = name;
         this.category = category;
         this.position = position;
         this.channelType = channelType;
         this.accessType = accessType;
+        this.chatId = chatId;
     }
 
-    public static Channel fromTeam(ChannelCreateRequest request, Category category) {
+    public static Channel fromTeam(ChannelCreateRequest request, Category category, UUID chatId) {
         return Channel.builder()
                 .name(request.name())
                 .category(category)
                 .position(1000.0)
                 .channelType(ChannelType.of(request.channelType()))
                 .accessType(ChannelAccessType.PUBLIC)
+                .chatId(chatId)
                 .build();
     }
 
