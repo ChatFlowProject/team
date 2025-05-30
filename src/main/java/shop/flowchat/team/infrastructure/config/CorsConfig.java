@@ -9,7 +9,7 @@ import java.util.List;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
     private static final List<String> ALLOWED_ORIGIN = List.of("http://localhost:3000",
-            "http://flowchat.shop", "https://flowchat.shop", "http://nps.flowchat.shop:30001", "http://nps.flowchat.shop:30001",
+            "http://flowchat.shop:30100", "https://flowchat.shop:30200",
             "https://chatflow-project.netlify.app");
     private static final List<String> ALLOWED_ORIGIN_PATTERN = List.of("http://*.flowchat.shop", "https://*.flowchat.shop");
 

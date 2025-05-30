@@ -59,25 +59,18 @@ cloud:
     stack:
       auto: false
 
-management:
-  endpoint.health.probes.enabled: true
-  health:
-    livenessstate:
-      enabled: true
-    readinessstate:
-      enabled: true
-
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8
   default-produces-media-type: application/json;charset=UTF-8
   paths-to-match: /**
   swagger-ui:
-    path: /
+    path: /teams/swagger
     display-request-duration: true
     groups-order: desc
     operations-sorter: method
     disable-swagger-default-url: true
   api-docs:
+    path: /teams/v3/api-docs
     groups:
       enabled: true
 
