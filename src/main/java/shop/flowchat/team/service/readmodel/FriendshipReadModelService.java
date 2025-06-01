@@ -13,7 +13,7 @@ public class FriendshipReadModelService {
     private final FriendshipReadModelRepository repository;
 
     @Transactional
-    public void upsert(FriendshipEventPayload payload) {
+    public void create(FriendshipEventPayload payload) {
         repository.findById(payload.id())
                 .ifPresentOrElse(
                         existingFriendship -> {}, // friendship은 update 이벤트가 없음
@@ -23,6 +23,7 @@ public class FriendshipReadModelService {
 
     @Transactional
     public void delete(FriendshipEventPayload payload) {
+        // friendship은 update 이벤트가 없으므로 soft-delete 처리가 필요 없음
         repository.deleteById(payload.id());
     }
 

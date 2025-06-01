@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.flowchat.team.domain.BaseEntity;
 import shop.flowchat.team.infrastructure.messaging.member.MemberEventPayload;
+import shop.flowchat.team.presentation.dto.member.response.MemberState;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,17 +27,21 @@ public class MemberReadModel extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private MemberReadModelState state;
 
-    @Column(nullable = false)
-    private LocalDateTime timestamp;
+    private LocalDateTime profileUpdateTimestamp;
+    private LocalDateTime statusUpdateTimestamp;
+
+    // private boolean isDeleted;
 
     @Builder
-    private MemberReadModel(UUID id, String nickname, String name, LocalDate birth, String avatarUrl, MemberReadModelState state, LocalDateTime timestamp) {
+    private MemberReadModel(UUID id, String nickname, String name, String avatarUrl, MemberReadModelState state,
+                            LocalDateTime profileUpdateTimestamp, LocalDateTime statusUpdateTimestamp) {
         this.id = id;
         this.nickname = nickname;
         this.name = name;
         this.avatarUrl = avatarUrl;
         this.state = state;
-        this.timestamp = timestamp;
+        this.profileUpdateTimestamp = profileUpdateTimestamp;
+        this.statusUpdateTimestamp = statusUpdateTimestamp;
     }
 
     public static MemberReadModel create(MemberEventPayload payload) {
@@ -46,16 +51,28 @@ public class MemberReadModel extends BaseEntity {
                 .name(payload.name())
                 .avatarUrl(payload.avatarUrl())
                 .state(payload.state())
-                .timestamp(payload.timestamp())
                 .build();
     }
 
-    public void update(MemberEventPayload payload) {
+    public boolean isNewProfileUpdateEvent(LocalDateTime timestamp) {
+        return profileUpdateTimestamp == null || timestamp.isAfter(profileUpdateTimestamp);
+    }
+
+    public boolean isNewStatusUpdateEvent(LocalDateTime timestamp) {
+        return statusUpdateTimestamp == null || timestamp.isAfter(statusUpdateTimestamp);
+    }
+
+    public void updateProfile(MemberEventPayload payload) {
         this.nickname = payload.nickname();
         this.name = payload.name();
         this.avatarUrl = payload.avatarUrl();
+        this.profileUpdateTimestamp = payload.timestamp();
+    }
+
+    public MemberReadModelState updateStatus(MemberEventPayload payload) {
         this.state = payload.state();
-        this.timestamp = payload.timestamp();
+        this.statusUpdateTimestamp = payload.timestamp();
+        return state;
     }
 
 }

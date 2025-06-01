@@ -27,7 +27,7 @@ public class FriendshipEventConsumer {
             }
 
             switch (eventType) {
-                case "friendshipEstablished", "friendshipAccept" -> service.upsert(payload);
+                case "friendshipEstablished", "friendshipAccept" -> service.create(payload);
                 case "friendshipDelete" -> service.delete(payload);
                 default -> log.warn("Unhandled friendship eventType: {}", eventType);
             }

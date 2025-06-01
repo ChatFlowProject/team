@@ -19,10 +19,7 @@ public class MemberEventConsumer {
     @KafkaListener(topics = "member") // groupId는 글로벌 group-id 설정으로 통일
     public void consume(ConsumerRecord<String, String> record, @Header(name = "eventType", required = false) String eventType) {
         try {
-//            OutboxEvent<MemberEventPayload> event = objectMapper.readValue(record.value(), new TypeReference<>() {});
-//            MemberEventPayload payload = event.getPayload();
-
-            // Kafka 메시지를 역직렬화 - cf.header는 따로 추출
+            // Kafka 메시지 역직렬화
             MemberEventPayload payload = objectMapper.readValue(record.value(), MemberEventPayload.class);
 
             if (eventType == null) {
@@ -30,11 +27,12 @@ public class MemberEventConsumer {
                 return;
             }
 
-            // eventType 기준으로 switch 분기 처리
             switch (eventType) {
-                case "signUp", "memberUpdate" -> service.upsert(payload);
+                case "signUp" -> service.create(payload);
+                case "memberUpdate" -> service.updateProfile(payload);
+                case "memberModifyStatus" -> service.updateStatus(payload);
                 case "memberDelete" -> service.delete(payload);
-                default -> log.warn("Unhandled member eventType: {}", eventType);
+                default -> log.warn("Unknown member eventType: {} Skipping record: {}", eventType, record);
             }
 
         } catch (Exception e) {

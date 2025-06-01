@@ -26,7 +26,6 @@ public class FriendshipReadModel extends BaseEntity {
     @Column(nullable = false, columnDefinition = "BINARY(16)")
     private UUID toMemberId;
 
-    @Column(nullable = false)
     private LocalDateTime timestamp;
 
     @Builder
