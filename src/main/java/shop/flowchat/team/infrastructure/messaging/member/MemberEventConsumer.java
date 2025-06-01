@@ -7,13 +7,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
-import shop.flowchat.team.readmodel.member.MemberReadModelUpdater;
+import shop.flowchat.team.service.readmodel.MemberReadModelService;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class MemberEventConsumer {
-    private final MemberReadModelUpdater updater;
+    private final MemberReadModelService service;
     private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "member") // groupId는 글로벌 group-id 설정으로 통일
@@ -32,14 +32,13 @@ public class MemberEventConsumer {
 
             // eventType 기준으로 switch 분기 처리
             switch (eventType) {
-                case "signUp", "memberUpdate" -> updater.upsert(payload);
-                case "memberDelete" -> updater.delete(payload.id());
-                case "memberModifyStatus" -> updater.updateStatus(payload.id(), payload.state());
+                case "signUp", "memberUpdate" -> service.upsert(payload);
+                case "memberDelete" -> service.delete(payload);
                 default -> log.warn("Unhandled member eventType: {}", eventType);
             }
 
         } catch (Exception e) {
-            // 예외 발생시 offset commit되지 않음 -> 따라서 위의 이벤트 처리 로직(switch문)은 unique키를 이용하거나 upsert 방식을 사용하여 데이터를 처리해야 함
+            // 예외 발생시 offset commit되지 않음 -> 따라서 위의 이벤트 처리 로직은 데이터를 멱등하게 처리해야 함
             log.error("Failed to consume event", e);
         }
     }

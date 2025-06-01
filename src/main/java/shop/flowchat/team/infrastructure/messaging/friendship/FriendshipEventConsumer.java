@@ -7,13 +7,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
-import shop.flowchat.team.readmodel.friendship.FriendshipReadModelUpdater;
+import shop.flowchat.team.service.readmodel.FriendshipReadModelService;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class FriendshipEventConsumer {
-    private final FriendshipReadModelUpdater updater;
+    private final FriendshipReadModelService service;
     private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "friendship") // groupId는 글로벌 group-id 설정으로 통일
@@ -27,13 +27,13 @@ public class FriendshipEventConsumer {
             }
 
             switch (eventType) {
-                case "friendshipEstablished", "friendshipAccept" -> updater.upsert(payload);
-                case "friendshipDelete" -> updater.delete(payload);
+                case "friendshipEstablished", "friendshipAccept" -> service.upsert(payload);
+                case "friendshipDelete" -> service.delete(payload);
                 default -> log.warn("Unhandled friendship eventType: {}", eventType);
             }
 
         } catch (Exception e) {
-            // 예외 발생시 offset commit되지 않음 -> 따라서 위의 이벤트 처리 로직(switch문)은 unique키를 이용하거나 upsert 방식을 사용하여 데이터를 처리해야 함
+            // 예외 발생시 offset commit되지 않음 -> 따라서 위의 이벤트 처리 로직은 데이터를 멱등하게 처리해야 함
             log.error("Failed to consume event", e);
         }
     }

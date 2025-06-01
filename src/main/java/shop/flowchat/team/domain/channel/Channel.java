@@ -41,7 +41,7 @@ public class Channel extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private ChannelAccessType accessType;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BINARY(16)")
     private UUID chatId;
 
     @Builder

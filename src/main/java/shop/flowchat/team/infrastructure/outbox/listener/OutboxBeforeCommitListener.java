@@ -1,7 +1,7 @@
 package shop.flowchat.team.infrastructure.outbox.listener;
 
-import shop.flowchat.team.infrastructure.outbox.model.EventStatus;
-import shop.flowchat.team.infrastructure.outbox.model.Outbox;
+import shop.flowchat.team.infrastructure.outbox.model.outbox.EventStatus;
+import shop.flowchat.team.infrastructure.outbox.model.outbox.Outbox;
 import shop.flowchat.team.common.exception.custom.InternalServiceException;
 import shop.flowchat.team.infrastructure.outbox.event.OutboxEvent;
 import shop.flowchat.team.infrastructure.repository.outbox.OutboxRepository;

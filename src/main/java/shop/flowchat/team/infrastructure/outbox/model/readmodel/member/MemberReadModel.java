@@ -1,4 +1,4 @@
-package shop.flowchat.team.readmodel.member;
+package shop.flowchat.team.infrastructure.outbox.model.readmodel.member;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -9,6 +9,7 @@ import shop.flowchat.team.domain.BaseEntity;
 import shop.flowchat.team.infrastructure.messaging.member.MemberEventPayload;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -21,16 +22,21 @@ public class MemberReadModel extends BaseEntity {
     private String nickname;
     private String name;
     private String avatarUrl;
+
     @Enumerated(EnumType.STRING)
-    private MemberState state;
+    private MemberReadModelState state;
+
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
 
     @Builder
-    private MemberReadModel(UUID id, String nickname, String name, LocalDate birth, String avatarUrl, MemberState state) {
+    private MemberReadModel(UUID id, String nickname, String name, LocalDate birth, String avatarUrl, MemberReadModelState state, LocalDateTime timestamp) {
         this.id = id;
         this.nickname = nickname;
         this.name = name;
         this.avatarUrl = avatarUrl;
         this.state = state;
+        this.timestamp = timestamp;
     }
 
     public static MemberReadModel create(MemberEventPayload payload) {
@@ -40,6 +46,7 @@ public class MemberReadModel extends BaseEntity {
                 .name(payload.name())
                 .avatarUrl(payload.avatarUrl())
                 .state(payload.state())
+                .timestamp(payload.timestamp())
                 .build();
     }
 
@@ -48,10 +55,7 @@ public class MemberReadModel extends BaseEntity {
         this.name = payload.name();
         this.avatarUrl = payload.avatarUrl();
         this.state = payload.state();
-    }
-
-    public MemberState changeState(MemberState state) {
-        return this.state = state;
+        this.timestamp = payload.timestamp();
     }
 
 }

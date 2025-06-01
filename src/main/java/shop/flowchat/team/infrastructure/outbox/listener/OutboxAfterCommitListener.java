@@ -1,6 +1,8 @@
 package shop.flowchat.team.infrastructure.outbox.listener;
 
-import shop.flowchat.team.infrastructure.outbox.model.Outbox;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import shop.flowchat.team.infrastructure.outbox.model.outbox.Outbox;
 import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
 import shop.flowchat.team.infrastructure.outbox.event.OutboxEvent;
 import shop.flowchat.team.infrastructure.outbox.publisher.KafkaEventPublisher;
@@ -17,6 +19,7 @@ public class OutboxAfterCommitListener {
     private final KafkaEventPublisher kafkaEventPublisher;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleOutboxEventAfterCommit(OutboxEvent event) {
         String eventId = event.getEventId();
         Outbox outbox = outboxRepository.findByEventId(eventId)

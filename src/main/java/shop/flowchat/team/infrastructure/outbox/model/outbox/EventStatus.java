@@ -1,4 +1,4 @@
-package shop.flowchat.team.infrastructure.outbox.model;
+package shop.flowchat.team.infrastructure.outbox.model.outbox;
 
 import lombok.Getter;
 

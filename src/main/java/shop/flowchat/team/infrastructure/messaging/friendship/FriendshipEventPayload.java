@@ -1,18 +1,12 @@
 package shop.flowchat.team.infrastructure.messaging.friendship;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record FriendshipEventPayload(
-        UUID id,
+        String id,
         UUID fromMemberId,
-        UUID toMemberId
-
+        UUID toMemberId,
+        LocalDateTime timestamp
 ) {
-    public static FriendshipEventPayload from(UUID id, UUID fromMemberId, UUID toMemberId) {
-        return new FriendshipEventPayload(
-                id,
-                fromMemberId,
-                toMemberId
-        );
-    }
 }

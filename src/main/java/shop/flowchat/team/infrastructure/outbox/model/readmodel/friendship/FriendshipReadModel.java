@@ -1,4 +1,4 @@
-package shop.flowchat.team.readmodel.friendship;
+package shop.flowchat.team.infrastructure.outbox.model.readmodel.friendship;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -8,27 +8,17 @@ import lombok.NoArgsConstructor;
 import shop.flowchat.team.domain.BaseEntity;
 import shop.flowchat.team.infrastructure.messaging.friendship.FriendshipEventPayload;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-@Table(
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_friendship_from_to",
-                        columnNames = {
-                                "from_member_id",
-                                "to_member_id"
-                        }
-                )
-        }
-)
 public class FriendshipReadModel extends BaseEntity {
 
     @Id
-    @Column(columnDefinition = "BINARY(16)")
-    private UUID id;
+    @Column(nullable = false, updatable = false)
+    private String id; // "fromMemberId:toMemberId" 형태의 정렬된 aggregateId (fromMemberId가 toMemberId보다 큼)
 
     @Column(nullable = false, columnDefinition = "BINARY(16)")
     private UUID fromMemberId;
@@ -36,11 +26,15 @@ public class FriendshipReadModel extends BaseEntity {
     @Column(nullable = false, columnDefinition = "BINARY(16)")
     private UUID toMemberId;
 
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
+
     @Builder
-    private FriendshipReadModel(UUID id, UUID fromMemberId, UUID toMemberId) {
+    private FriendshipReadModel(String id, UUID fromMemberId, UUID toMemberId, LocalDateTime timestamp) {
         this.id = id;
         this.fromMemberId = fromMemberId;
         this.toMemberId = toMemberId;
+        this.timestamp = timestamp;
     }
 
     public static FriendshipReadModel create(FriendshipEventPayload payload) {
@@ -48,6 +42,7 @@ public class FriendshipReadModel extends BaseEntity {
                 .id(payload.id())
                 .fromMemberId(payload.fromMemberId())
                 .toMemberId(payload.toMemberId())
+                .timestamp(payload.timestamp())
                 .build();
     }
 

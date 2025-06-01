@@ -1,8 +1,8 @@
 package shop.flowchat.team.infrastructure.repository.outbox;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import shop.flowchat.team.infrastructure.outbox.model.EventStatus;
-import shop.flowchat.team.infrastructure.outbox.model.Outbox;
+import shop.flowchat.team.infrastructure.outbox.model.outbox.EventStatus;
+import shop.flowchat.team.infrastructure.outbox.model.outbox.Outbox;
 
 import java.util.Collection;
 import java.util.List;
