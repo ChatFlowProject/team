@@ -14,6 +14,10 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
+@Table(uniqueConstraints = {@UniqueConstraint(
+        name = "uk_friendship_read_model_from_to",
+        columnNames = {"from_member_id", "to_member_id"}
+)})
 public class FriendshipReadModel extends BaseEntity {
 
     @Id

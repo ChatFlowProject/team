@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.presentation.dto.ApiResponse;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelMoveRequest;
-import shop.flowchat.team.presentation.dto.channel.response.ChannelCreateResponse;
+import shop.flowchat.team.presentation.dto.channel.response.ChannelResponse;
 import shop.flowchat.team.presentation.dto.view.CategoryViewResponse;
 import shop.flowchat.team.service.facade.TeamFacadeService;
 
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Channel Service API")
+@Tag(name = "Team Channel Service API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/teams/{teamId}/categories/{categoryId}/channels")
@@ -24,7 +24,7 @@ public class ChannelController {
 
     @Operation(summary = "팀에 채널 생성")
     @PostMapping
-    public ApiResponse<ChannelCreateResponse> createChannel(
+    public ApiResponse<ChannelResponse> createChannel(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("categoryId") Long categoryId,
             @Valid @RequestBody ChannelCreateRequest request) { // todo: 권한 체크 추가 (AuthorizationException)

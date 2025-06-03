@@ -15,7 +15,7 @@ import shop.flowchat.team.service.facade.TeamFacadeService;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Category Service API")
+@Tag(name = "Team Category Service API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/teams/{teamId}/categories")

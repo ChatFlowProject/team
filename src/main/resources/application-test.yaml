@@ -21,3 +21,6 @@ spring:
 chatflow:
   http-url: http://test.flowchat.shop:30100
   https-url: https://test.flowchat.shop:30200
+
+jwt:
+  secret-key: test_user_jwt_token_for_signature

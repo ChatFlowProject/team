@@ -44,7 +44,7 @@ public class TeamFacadeServiceV2 {
             Team team = teamService.createTeam(request, memberId);
             teamMemberService.createTeamMember(team, memberId, MemberRole.OWNER);
             Category category = categoryService.createCategory(CategoryCreateRequest.init(), team);
-            channelService.createChannel(ChannelCreateRequest.init(ChannelType.TEXT.toString()), category);
+            channelService.createChannel(ChannelCreateRequest.initChannel(ChannelType.TEXT.toString()), category);
 
             eventPublisher.publishEvent(new TeamCreateEvent(team.getId().toString(), TeamEventPayload.from(team)));
             return TeamCreateResponse.from(team.getId());

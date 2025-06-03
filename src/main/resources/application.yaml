@@ -76,3 +76,6 @@ springdoc:
     path: /teams/v3/api-docs
     groups:
       enabled: true
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}

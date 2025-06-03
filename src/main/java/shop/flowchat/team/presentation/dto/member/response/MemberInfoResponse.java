@@ -1,6 +1,8 @@
 package shop.flowchat.team.presentation.dto.member.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import shop.flowchat.team.infrastructure.outbox.model.readmodel.member.MemberReadModel;
+import shop.flowchat.team.infrastructure.outbox.model.readmodel.member.MemberReadModelState;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,8 +17,18 @@ public record MemberInfoResponse(
         @Schema(description = "회원 아바타 이미지 url", example = "https://snowball-bucket.s3.ap-northeast-2.amazonaws.com/f41b6bb9-3jerry.png")
         String avatarUrl,
         @Schema(description = "회원 상태", example = "ONLINE(온라인), OFFLINE(오프라인)")
-        MemberState state,
+        MemberReadModelState state,
         @Schema(description = "회원 가입 시기", example = "2008-04-07T15:00:00")
         LocalDateTime createdAt
 ) {
+    public static MemberInfoResponse from(MemberReadModel member) {
+        return new MemberInfoResponse(
+                member.getId(),
+                member.getNickname(),
+                member.getName(),
+                member.getAvatarUrl(),
+                member.getState(),
+                member.getCreatedAt()
+        );
+    }
 }

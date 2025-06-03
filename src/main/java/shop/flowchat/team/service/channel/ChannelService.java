@@ -32,11 +32,23 @@ public class ChannelService {
     public Channel createChannel(ChannelCreateRequest request, Category category) {
         try {
             UUID chatId = dialogClient.createChat().data().chatId();
-            Channel channel = Channel.fromTeam(request, category, chatId);
+            Channel channel = Channel.ofTeam(request, category, chatId);
             Double maxPosition = channelRepository.findMaxPositionByCategoryId(category.getId());
             channel.movePosition(category, maxPosition, maxPosition + 2000.0);
-            channelRepository.save(channel);
-            return channel;
+            return channelRepository.save(channel);
+        } catch (FeignException e) {
+            throw new ExternalServiceException(String.format("Failed to get response on createChannel. [status:%s][message:%s]", e.status(), e.getMessage()));
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
+        }
+    }
+
+    @Transactional
+    public Channel createPrivateChannel(ChannelCreateRequest request) {
+        try {
+            UUID chatId = dialogClient.createChat().data().chatId();
+            Channel channel = Channel.ofPrivate(request, chatId);
+            return channelRepository.save(channel);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on createChannel. [status:%s][message:%s]", e.status(), e.getMessage()));
         } catch (DataIntegrityViolationException e) {

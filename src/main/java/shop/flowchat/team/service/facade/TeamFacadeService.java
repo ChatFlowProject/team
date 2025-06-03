@@ -5,13 +5,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shop.flowchat.team.common.exception.ErrorCode;
+import shop.flowchat.team.common.exception.custom.AuthorizationException;
+import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
+import shop.flowchat.team.common.exception.custom.ExternalServiceException;
+import shop.flowchat.team.common.exception.custom.ServiceException;
+import shop.flowchat.team.domain.category.Category;
+import shop.flowchat.team.domain.channel.Channel;
+import shop.flowchat.team.domain.channel.ChannelType;
+import shop.flowchat.team.domain.team.Team;
+import shop.flowchat.team.domain.teammember.MemberRole;
+import shop.flowchat.team.domain.teammember.TeamMember;
+import shop.flowchat.team.infrastructure.feign.MemberClient;
 import shop.flowchat.team.presentation.dto.category.request.CategoryCreateRequest;
 import shop.flowchat.team.presentation.dto.category.request.CategoryMoveRequest;
 import shop.flowchat.team.presentation.dto.category.response.CategoryCreateResponse;
 import shop.flowchat.team.presentation.dto.category.response.CategoryResponse;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelMoveRequest;
-import shop.flowchat.team.presentation.dto.channel.response.ChannelCreateResponse;
 import shop.flowchat.team.presentation.dto.channel.response.ChannelResponse;
 import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
 import shop.flowchat.team.presentation.dto.member.response.MemberResponse;
@@ -22,22 +33,10 @@ import shop.flowchat.team.presentation.dto.team.response.TeamResponse;
 import shop.flowchat.team.presentation.dto.teammember.response.TeamMemberResponse;
 import shop.flowchat.team.presentation.dto.view.CategoryViewResponse;
 import shop.flowchat.team.presentation.dto.view.TeamViewResponse;
-import shop.flowchat.team.domain.category.Category;
-import shop.flowchat.team.domain.channel.Channel;
-import shop.flowchat.team.domain.channel.ChannelType;
-import shop.flowchat.team.domain.team.Team;
-import shop.flowchat.team.domain.teammember.MemberRole;
-import shop.flowchat.team.domain.teammember.TeamMember;
-import shop.flowchat.team.common.exception.ErrorCode;
-import shop.flowchat.team.common.exception.custom.AuthorizationException;
-import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
-import shop.flowchat.team.common.exception.custom.ExternalServiceException;
-import shop.flowchat.team.common.exception.custom.ServiceException;
 import shop.flowchat.team.service.category.CategoryService;
 import shop.flowchat.team.service.channel.ChannelService;
-import shop.flowchat.team.service.teammember.TeamMemberService;
 import shop.flowchat.team.service.team.TeamService;
-import shop.flowchat.team.infrastructure.feign.MemberClient;
+import shop.flowchat.team.service.teammember.TeamMemberService;
 
 import java.util.Comparator;
 import java.util.List;
@@ -61,7 +60,7 @@ public class TeamFacadeService {
             Team team = teamService.createTeam(request, memberId);
             teamMemberService.createTeamMember(team, memberId, MemberRole.OWNER);
             Category category = categoryService.createCategory(CategoryCreateRequest.init(), team);
-            channelService.createChannel(ChannelCreateRequest.init(ChannelType.TEXT.toString()), category);
+            channelService.createChannel(ChannelCreateRequest.initChannel(ChannelType.TEXT.toString()), category);
             return TeamCreateResponse.from(team.getId());
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on initializeTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
@@ -103,10 +102,10 @@ public class TeamFacadeService {
     }
 
     @Transactional
-    public ChannelCreateResponse addChannel(UUID teamId, Long categoryId, ChannelCreateRequest request) {
+    public ChannelResponse addChannel(UUID teamId, Long categoryId, ChannelCreateRequest request) {
         Category category = categoryService.validateTeamCategory(teamId, categoryId);
         Channel channel = channelService.createChannel(request, category);
-        return ChannelCreateResponse.from(channel.getId(), channel.getPosition());
+        return ChannelResponse.ofTeam(channel);
     }
 
     @Transactional(readOnly = true)
@@ -126,7 +125,7 @@ public class TeamFacadeService {
         try {
             // Team 서버 및 TeamMember들 조회 (fetch join으로 Team까지 조회)
             List<TeamMember> teamMembers = teamMemberService.getTeamMembersByTeamId(teamId);
-            if(teamMembers.size() == 0) { // 팀 마스터는 서버를 나갈 수 없으므로 teamMember 수가 0이면 삭제된 서버
+            if (teamMembers.size() == 0) { // 팀 마스터는 서버를 나갈 수 없으므로 teamMember 수가 0이면 삭제된 서버
                 throw new EntityNotFoundException("존재하지 않는 팀 서버입니다.");
             }
             // TeamMember의 회원 정보 조회
@@ -164,7 +163,7 @@ public class TeamFacadeService {
                         CategoryResponse.from(category),
                         channels.stream()
                                 .filter(channel -> channel.getCategory().getId().equals(category.getId()))
-                                .map(ChannelResponse::from)
+                                .map(ChannelResponse::ofTeam)
                                 .sorted(Comparator.comparing(ChannelResponse::position))// position 오름차순 정렬
                                 .collect(Collectors.toList())))
                 .collect(Collectors.toList());

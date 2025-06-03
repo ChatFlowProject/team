@@ -13,7 +13,11 @@ public record ChannelCreateRequest(
         @Schema(description = "채널 유형", example = "TEXT / VOICE")
         String channelType
 ) {
-    public static ChannelCreateRequest init(String channelType) {
+    public static ChannelCreateRequest initChannel(String channelType) {
         return new ChannelCreateRequest("일반", channelType);
+    }
+
+    public static ChannelCreateRequest initPrivateChannel(String channelName, String channelType) {
+        return new ChannelCreateRequest(channelName, channelType);
     }
 }

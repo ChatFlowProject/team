@@ -54,13 +54,23 @@ public class Channel extends BaseEntity {
         this.chatId = chatId;
     }
 
-    public static Channel fromTeam(ChannelCreateRequest request, Category category, UUID chatId) {
+    public static Channel ofTeam(ChannelCreateRequest request, Category category, UUID chatId) {
         return Channel.builder()
                 .name(request.name())
                 .category(category)
                 .position(1000.0)
                 .channelType(ChannelType.of(request.channelType()))
                 .accessType(ChannelAccessType.PUBLIC)
+                .chatId(chatId)
+                .build();
+    }
+
+    public static Channel ofPrivate(ChannelCreateRequest request, UUID chatId) {
+        return Channel.builder()
+                .name(request.name())
+                .position(1000.0)
+                .channelType(ChannelType.of(request.channelType()))
+                .accessType(ChannelAccessType.PRIVATE)
                 .chatId(chatId)
                 .build();
     }
