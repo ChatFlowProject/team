@@ -15,6 +15,7 @@ public class JwtTokenProvider {
     private String secretKey;
 
     public UUID getMemberIdFromToken(String token) {
+        token = validationAuthorizationHeader(token);
         Claims claims = getClaims(token);
         String subject = claims.getSubject(); // "UUID:ROLE"
         return UUID.fromString(subject.split(":")[0]);
@@ -27,4 +28,12 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+    private String  validationAuthorizationHeader(String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("잘못된 토큰 형식입니다.");
+        }
+        return token.substring("Bearer ".length());
+    }
+
 }
