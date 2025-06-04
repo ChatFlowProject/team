@@ -7,9 +7,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.presentation.dto.ApiResponse;
-import shop.flowchat.team.presentation.dto.view.PrivateChannelViewResponse;
+import shop.flowchat.team.presentation.dto.channel.response.ChannelResponse;
 import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
+import shop.flowchat.team.presentation.dto.view.PrivateChannelViewResponse;
 import shop.flowchat.team.service.facade.PrivateChannelService;
+
+import java.util.List;
 
 @Tag(name = "Private Channel Service API (인증 토큰 필요)")
 @RequiredArgsConstructor
@@ -26,11 +29,19 @@ public class PrivateChannelController {
         return ApiResponse.success(privateChannelService.addPrivateChannel(token, request));
     }
 
-//    @Operation(summary = "모든 DM 채널 조회")
-//    @GetMapping("/me")
-//    public ApiResponse<List<PrivateChannelResponse>> createPrivateChannel(
-//            @Parameter(hidden = true) @RequestHeader("Authorization") String token) {
-//        return ApiResponse.success(privateChannelService.getAllPrivateChannel(token));
-//    }
+    @Operation(summary = "모든 DM 채널 조회")
+    @GetMapping("/me")
+    public ApiResponse<List<ChannelResponse>> getAllPrivateChannel(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String token) {
+        return ApiResponse.success(privateChannelService.getAllPrivateChannel(token));
+    }
+
+    @Operation(summary = "DM 채널 상세 조회")
+    @GetMapping("/{channelId}")
+    public ApiResponse<PrivateChannelViewResponse> getPrivateChannelView(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String token,
+            @PathVariable("channelId") Long channelId) {
+        return ApiResponse.success(privateChannelService.getPrivateChannelView(token, channelId));
+    }
 
 }

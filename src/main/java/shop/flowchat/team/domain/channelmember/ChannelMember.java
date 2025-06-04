@@ -7,8 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import shop.flowchat.team.domain.channel.Channel;
-
-import java.util.UUID;
+import shop.flowchat.team.infrastructure.outbox.model.readmodel.member.MemberReadModel;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,19 +25,20 @@ public class ChannelMember {
     @JoinColumn(name = "channel_id", nullable = false)
     private Channel channel;
 
-    @Column(nullable = false)
-    private UUID memberId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private MemberReadModel member;
 
     @Builder
-    private ChannelMember(Channel channel, UUID memberId) {
+    private ChannelMember(Channel channel, MemberReadModel member) {
         this.channel = channel;
-        this.memberId = memberId;
+        this.member = member;
     }
 
-    public static ChannelMember from(Channel channel, UUID memberId) {
+    public static ChannelMember from(Channel channel, MemberReadModel member) {
         return ChannelMember.builder()
                 .channel(channel)
-                .memberId(memberId)
+                .member(member)
                 .build();
     }
 
