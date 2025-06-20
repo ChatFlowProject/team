@@ -9,6 +9,10 @@ chatflow:
   https-url: ${CHATFLOW_HTTPS_URL}
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   profiles:
     active: ${PROFILE_ACTIVE}
   datasource:

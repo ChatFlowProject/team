@@ -18,14 +18,14 @@ import shop.flowchat.team.infrastructure.s3.S3ImageService;
 public class ImageController {
     private final S3ImageService s3ImageService;
 
-    @Operation(summary = "이미지 업로드")
+    @Operation(summary = "파일 업로드")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ApiResponse<String> uploadImage(@RequestPart MultipartFile file) {
         String imgPath = s3ImageService.upload(file);
         return ApiResponse.success(imgPath);
     }
 
-    @Operation(summary = "url로 이미지 삭제")
+    @Operation(summary = "url로 파일 삭제")
     @DeleteMapping
     public ApiResponse<String> deleteImage(@RequestParam String url) {
         s3ImageService.deleteByUrl(url);
