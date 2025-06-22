@@ -13,9 +13,9 @@ import shop.flowchat.team.infrastructure.repository.readmodel.FriendshipReadMode
 import shop.flowchat.team.infrastructure.repository.readmodel.MemberReadModelRepository;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.response.ChannelResponse;
-import shop.flowchat.team.presentation.dto.view.PrivateChannelViewResponse;
 import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
 import shop.flowchat.team.presentation.dto.member.response.MemberInfoResponse;
+import shop.flowchat.team.presentation.dto.view.PrivateChannelViewResponse;
 import shop.flowchat.team.service.channel.ChannelService;
 import shop.flowchat.team.service.channelmember.ChannelMemberService;
 
@@ -37,7 +37,7 @@ public class PrivateChannelService {
         UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
         List<UUID> friendIds = request.memberIds();
         List<FriendshipReadModel> friendships = friendshipReadModelRepository.findByFromMemberIdOrToMemberId(memberId, memberId);
-        if(friendIds.stream()
+        if (friendIds.stream()
                 .anyMatch(friendId -> friendships.stream()
                         .allMatch(friend -> !friend.getFromMemberId().equals(friendId) && !friend.getToMemberId().equals(friendId)))) {
             throw new IllegalArgumentException("친구 관계가 아닌 회원이 포함되어 있어 채널을 생성할 수 없습니다.");
@@ -52,39 +52,39 @@ public class PrivateChannelService {
         Channel channel = channelService.createPrivateChannel(channelCreateRequest);
         channelMemberService.createChannelMembers(friends, channel);
 
-        return makePrivateChannelViewResponse(friends, channel, memberId);
+        return makePrivateChannelViewResponse(channel, memberId);
     }
 
     @Transactional(readOnly = true)
-    public List<ChannelResponse> getAllPrivateChannel(String token) {
+    public List<PrivateChannelViewResponse> getAllPrivateChannelsForMember(String token) {
         UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-        List<ChannelMember> channelMembers = channelMemberService.getChannelMembersByMemberId(memberId);
-        return channelMembers.stream()
-                .map(channelMember -> ChannelResponse.ofPrivate(channelMember.getChannel(), channelMember.getMember().getName()))
+
+        List<Channel> channels = channelService.getAllPrivateChannelsByMemberId(memberId);
+
+        return channels.stream()
+                .map(channel -> makePrivateChannelViewResponse(channel, memberId))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public PrivateChannelViewResponse getPrivateChannelView(String token, Long channelId) {
-        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-        Channel channel = channelService.getChannelById(channelId);
-        List<ChannelMember> channelMembers = channelMemberService.getChannelMembersByChannelId(channel.getId());
-        List<MemberReadModel> members = channelMembers.stream()
+    public void getPrivateChannelMessages(String token, Long channelId) {
+        return;
+    }
+
+    private PrivateChannelViewResponse makePrivateChannelViewResponse(Channel channel, UUID myMemberId) {
+        String memberName = channel.getChannelMembers().stream()
                 .map(ChannelMember::getMember)
-                .collect(Collectors.toList());
-        return makePrivateChannelViewResponse(members, channel, memberId);
-    }
-
-    private PrivateChannelViewResponse makePrivateChannelViewResponse(List<MemberReadModel> members, Channel channel, UUID myMemberId) {
-        String memberName = members.stream()
                 .filter(member -> member.getId().equals(myMemberId))
                 .map(MemberReadModel::getName)
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalStateException("내가 포함되지 않은 채널입니다."));
+
         ChannelResponse channelResponse = ChannelResponse.ofPrivate(channel, memberName);
-        List<MemberInfoResponse> channelMemberResponses = members.stream()
+        List<MemberInfoResponse> channelMemberResponses = channel.getChannelMembers().stream()
+                .map(ChannelMember::getMember)
                 .map(MemberInfoResponse::from)
                 .collect(Collectors.toList());
+
         return PrivateChannelViewResponse.from(channelResponse, channelMemberResponses);
     }
 }

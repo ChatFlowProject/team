@@ -11,6 +11,7 @@ import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
 import shop.flowchat.team.common.exception.custom.ExternalServiceException;
 import shop.flowchat.team.domain.category.Category;
 import shop.flowchat.team.domain.channel.Channel;
+import shop.flowchat.team.domain.channel.ChannelAccessType;
 import shop.flowchat.team.infrastructure.feign.DialogClient;
 import shop.flowchat.team.infrastructure.repository.channel.ChannelRepository;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
@@ -46,7 +47,7 @@ public class ChannelService {
     @Transactional
     public Channel createPrivateChannel(ChannelCreateRequest request) {
         try {
-            UUID chatId = dialogClient.createChat().data().chatId();
+            UUID chatId = UUID.randomUUID();// dialogClient.createChat().data().chatId();
             Channel channel = Channel.ofPrivate(request, chatId);
             return channelRepository.save(channel);
         } catch (FeignException e) {
@@ -69,6 +70,11 @@ public class ChannelService {
     }
 
     @Transactional(readOnly = true)
+    public List<Channel> getAllPrivateChannelsByMemberId(UUID memberId) {
+        return channelRepository.findAllPrivateChannelsWithMember(memberId, ChannelAccessType.PRIVATE);
+    }
+
+    @Transactional(readOnly = true)
     public Channel validateCategoryChannel(Long categoryId, Long channelId) {
         Channel channel = getChannelById(channelId);
         if (!channel.getCategory().getId().equals(categoryId)) {
@@ -83,7 +89,7 @@ public class ChannelService {
         if (channels.size() != channelIds.size()) {
             throw new EntityNotFoundException("존재하지 않는 채널입니다.");
         }
-        // todo: 쿼리 왜 나감?
+
         boolean invalidAccess = channels.stream()
                 .anyMatch(channel -> categoryIds.stream()
                         .noneMatch(categoryId -> categoryId.equals(channel.getCategory().getId()))

@@ -9,7 +9,6 @@ import shop.flowchat.team.infrastructure.outbox.model.readmodel.member.MemberRea
 import shop.flowchat.team.infrastructure.repository.channelmember.ChannelMemberRepository;
 
 import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -18,20 +17,13 @@ public class ChannelMemberService {
 
     @Transactional
     public void createChannelMembers(List<MemberReadModel> members, Channel channel) {
-        List<ChannelMember> channelMembers = members.stream()
-                .map(member -> ChannelMember.from(channel, member))
-                .toList();
-        channelMemberRepository.saveAll(channelMembers);
-    }
+        for (MemberReadModel member : members) {
+            ChannelMember channelMember = ChannelMember.from(member);
+            channel.addChannelMember(channelMember); // 연관관계 양방향 설정
+        }
 
-    @Transactional(readOnly = true)
-    public List<ChannelMember> getChannelMembersByMemberId(UUID memberId) {
-        return channelMemberRepository.findByMemberId(memberId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ChannelMember> getChannelMembersByChannelId(Long channelId) {
-        return channelMemberRepository.findByChannelId(channelId);
+        // saveAll 안 해도 됨 cascade = ALL -> channel save 시 자동 저장
+        // channelMemberRepository.saveAll(channelMembers);
     }
 
 }

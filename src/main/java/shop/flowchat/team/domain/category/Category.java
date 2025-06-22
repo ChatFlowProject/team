@@ -21,7 +21,7 @@ public class Category extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,4 +49,5 @@ public class Category extends BaseEntity {
     public void movePositionBetween(Double positionA, Double positionB) {
         this.position = (positionA + positionB)/2;
     }
+
 }

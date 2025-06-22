@@ -5,10 +5,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import shop.flowchat.team.domain.channelmember.ChannelMember;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.domain.BaseEntity;
 import shop.flowchat.team.domain.category.Category;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,12 +26,15 @@ public class Channel extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY) // nullable -> PRIVATE AccessType일 경우 DM 채널이므로
+    @ManyToOne(fetch = FetchType.LAZY) // null, AccessType=PRIVATE 일 경우 DM 채널
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @OneToMany(mappedBy = "channel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChannelMember> channelMembers = new ArrayList<>();
 
     @Column(nullable = false)
     private Double position;
@@ -52,6 +58,11 @@ public class Channel extends BaseEntity {
         this.channelType = channelType;
         this.accessType = accessType;
         this.chatId = chatId;
+    }
+
+    public void addChannelMember(ChannelMember channelMember) { // Note: 연관관계 편의 메서드
+        this.channelMembers.add(channelMember);
+        channelMember.setChannel(this); // 연관관계 주인의 외래키 설정
     }
 
     public static Channel ofTeam(ChannelCreateRequest request, Category category, UUID chatId) {
@@ -79,4 +90,5 @@ public class Channel extends BaseEntity {
         this.category = category;
         this.position = (positionA + positionB)/2;
     }
+
 }

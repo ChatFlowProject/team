@@ -35,11 +35,15 @@ public class ChannelMember {
         this.member = member;
     }
 
-    public static ChannelMember from(Channel channel, MemberReadModel member) {
+    public static ChannelMember from(MemberReadModel member) {
         return ChannelMember.builder()
-                .channel(channel)
+                .channel(null)
                 .member(member)
                 .build();
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 
 }
