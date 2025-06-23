@@ -28,6 +28,25 @@ spring:
     properties:
       hibernate.format_sql: true
       dialect: org.hibernate.dialect.MySQL8InnoDBDialect
+  redis:
+    redisson:
+      config: |
+        clusterServersConfig:
+          idleConnectionTimeout: 10000
+          connectTimeout: 10000
+          timeout: 3000
+          retryAttempts: 3
+          retryInterval: 1500
+          failedSlaveReconnectionInterval: 3000
+          failedSlaveCheckInterval: 60000
+          password: chatflow
+          nodeAddresses:
+            - "redis://redis-cluster-0.redis-cluster-headless.redis.svc.cluster.local:6379"
+            - "redis://redis-cluster-1.redis-cluster-headless.redis.svc.cluster.local:6379"
+            - "redis://redis-cluster-2.redis-cluster-headless.redis.svc.cluster.local:6379"
+            - "redis://redis-cluster-3.redis-cluster-headless.redis.svc.cluster.local:6379"
+            - "redis://redis-cluster-4.redis-cluster-headless.redis.svc.cluster.local:6379"
+            - "redis://redis-cluster-5.redis-cluster-headless.redis.svc.cluster.local:6379"
   kafka:
     bootstrap-servers: "kafka-controller-headless.kafka.svc.cluster.local:9092"
     properties:
