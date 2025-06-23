@@ -21,6 +21,13 @@ public interface ChannelRepository extends JpaRepository<Channel, Long> {
     @Query("SELECT COALESCE(MAX(c.position), 0) FROM Channel c WHERE c.category.id = :categoryId")
     Double findMaxPositionByCategoryId(@Param("categoryId") Long categoryId);
 
+    @Query("SELECT DISTINCT c FROM Channel c " +
+            "JOIN FETCH c.channelMembers cmAll " +
+            "JOIN FETCH cmAll.member " +
+            "WHERE c.accessType = :accessType AND c.name = :name")
+    List<Channel> findByName(@Param("name") String name,
+                             @Param("accessType") ChannelAccessType accessType);
+
     void deleteByCategory(Category category); // 벌크로 동작하는 쿼리 메소드
 
     @Modifying
@@ -35,5 +42,4 @@ public interface ChannelRepository extends JpaRepository<Channel, Long> {
             "WHERE c.accessType = :accessType AND cmm.id = :memberId")
     List<Channel> findAllPrivateChannelsWithMember(@Param("memberId") UUID memberId,
                                                    @Param("accessType") ChannelAccessType accessType);
-
 }

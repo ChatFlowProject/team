@@ -2,6 +2,7 @@ package shop.flowchat.team.service.channel;
 
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +20,13 @@ import shop.flowchat.team.presentation.dto.channel.request.ChannelMoveRequest;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class ChannelService {
     private final ChannelRepository channelRepository;
@@ -72,6 +75,15 @@ public class ChannelService {
     @Transactional(readOnly = true)
     public List<Channel> getAllPrivateChannelsByMemberId(UUID memberId) {
         return channelRepository.findAllPrivateChannelsWithMember(memberId, ChannelAccessType.PRIVATE);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Channel> findChannelByName(String name) {
+        List<Channel> res = channelRepository.findByName(name, ChannelAccessType.PRIVATE);
+        if (res.size() > 1) log.error("findChannelByName - duplicated private channel [name:{}]", name);
+        return res.isEmpty()
+                ? Optional.empty()
+                : Optional.of(res.get(0));
     }
 
     @Transactional(readOnly = true)

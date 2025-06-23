@@ -45,17 +45,20 @@ public class PrivateChannelService {
 
         friendIds.add(memberId);
         friendIds = friendIds.stream().distinct().toList();
-        checkCreatedPrivateChannel(friendIds);
-
         List<MemberReadModel> friends = memberReadModelRepository.findByIdIn(friendIds);
         String friendNames = friends.stream()
                 .map(MemberReadModel::getName)
+                .sorted()
                 .collect(Collectors.joining(","));
-        ChannelCreateRequest channelCreateRequest = ChannelCreateRequest.initPrivateChannel(friendNames, ChannelType.TEXT.toString());
-        Channel channel = channelService.createPrivateChannel(channelCreateRequest);
-        channelMemberService.createChannelMembers(friends, channel);
 
-        return makePrivateChannelViewResponse(channel, memberId);
+        return channelService.findChannelByName(friendNames)
+                .map(channel -> makePrivateChannelViewResponse(channel, memberId))
+                .orElseGet(() -> {
+                    ChannelCreateRequest channelCreateRequest = ChannelCreateRequest.initPrivateChannel(friendNames, ChannelType.TEXT.toString());
+                    Channel channel = channelService.createPrivateChannel(channelCreateRequest);
+                    channelMemberService.createChannelMembers(friends, channel);
+                    return makePrivateChannelViewResponse(channel, memberId);
+                });
     }
 
     @Transactional(readOnly = true)
@@ -72,10 +75,6 @@ public class PrivateChannelService {
     @Transactional(readOnly = true)
     public void getPrivateChannelMessages(String token, Long channelId) {
         return;
-    }
-
-    boolean checkCreatedPrivateChannel(List<UUID> memberIds) {
-        return false;
     }
 
     private PrivateChannelViewResponse makePrivateChannelViewResponse(Channel channel, UUID myMemberId) {
