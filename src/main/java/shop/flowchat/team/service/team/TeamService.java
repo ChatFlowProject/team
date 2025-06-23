@@ -23,7 +23,7 @@ public class TeamService {
         try {
             teamRepository.save(team);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("입력값이 잘못되었습니다." );
+            throw new IllegalArgumentException("createTeam - 입력값이 잘못되었습니다." );
         }
         return team;
     }

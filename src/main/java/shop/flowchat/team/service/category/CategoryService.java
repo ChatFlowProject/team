@@ -31,7 +31,7 @@ public class CategoryService {
         try {
             categoryRepository.save(category);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
+            throw new IllegalArgumentException("createCategory - 입력값이 잘못되었습니다.");
         }
         return category;
     }
@@ -55,7 +55,7 @@ public class CategoryService {
     public List<Category> validateTeamCategories(UUID teamId, List<Long> categoryIds) {
         List<Category> categories = categoryRepository.findByIdIn(categoryIds);
         if(categories.size() != categoryIds.size()) {
-            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
+            throw new AuthorizationException("카테고리가 올바르지 않습니다.");
         }
         if(categories.stream().anyMatch(category -> !category.getTeam().getId().equals(teamId))) {
             throw new AuthorizationException("카테고리의 팀 ID가 올바르지 않습니다.");

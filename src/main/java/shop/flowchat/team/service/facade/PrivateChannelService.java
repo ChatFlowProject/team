@@ -44,7 +44,10 @@ public class PrivateChannelService {
         }
 
         friendIds.add(memberId);
-        List<MemberReadModel> friends = memberReadModelRepository.findByIdIn(friendIds.stream().distinct().toList());
+        friendIds = friendIds.stream().distinct().toList();
+        checkCreatedPrivateChannel(friendIds);
+
+        List<MemberReadModel> friends = memberReadModelRepository.findByIdIn(friendIds);
         String friendNames = friends.stream()
                 .map(MemberReadModel::getName)
                 .collect(Collectors.joining(","));
@@ -69,6 +72,10 @@ public class PrivateChannelService {
     @Transactional(readOnly = true)
     public void getPrivateChannelMessages(String token, Long channelId) {
         return;
+    }
+
+    boolean checkCreatedPrivateChannel(List<UUID> memberIds) {
+        return false;
     }
 
     private PrivateChannelViewResponse makePrivateChannelViewResponse(Channel channel, UUID myMemberId) {

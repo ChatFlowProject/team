@@ -12,6 +12,7 @@ import shop.flowchat.team.common.exception.custom.ExternalServiceException;
 import shop.flowchat.team.common.exception.custom.ServiceException;
 import shop.flowchat.team.domain.category.Category;
 import shop.flowchat.team.domain.channel.Channel;
+import shop.flowchat.team.domain.channel.ChannelAccessType;
 import shop.flowchat.team.domain.channel.ChannelType;
 import shop.flowchat.team.domain.team.Team;
 import shop.flowchat.team.domain.teammember.MemberRole;
@@ -23,6 +24,7 @@ import shop.flowchat.team.presentation.dto.category.response.CategoryCreateRespo
 import shop.flowchat.team.presentation.dto.category.response.CategoryResponse;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelMoveRequest;
+import shop.flowchat.team.presentation.dto.channel.request.ChannelUpdateRequest;
 import shop.flowchat.team.presentation.dto.channel.response.ChannelResponse;
 import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
 import shop.flowchat.team.presentation.dto.member.response.MemberResponse;
@@ -65,7 +67,7 @@ public class TeamFacadeService {
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on initializeTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
+            throw new IllegalArgumentException("initializeTeam - 입력값이 잘못되었습니다.");
         } catch (Exception e) {
             throw new ServiceException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
@@ -105,6 +107,17 @@ public class TeamFacadeService {
     public ChannelResponse addChannel(UUID teamId, Long categoryId, ChannelCreateRequest request) {
         Category category = categoryService.validateTeamCategory(teamId, categoryId);
         Channel channel = channelService.createChannel(request, category);
+        return ChannelResponse.ofTeam(channel);
+    }
+
+    @Transactional
+    public ChannelResponse updateChannel(UUID teamId, Long categoryId, Long channelId, ChannelUpdateRequest request) {
+        categoryService.validateTeamCategory(teamId, categoryId);
+        Channel channel = channelService.getChannelById(channelId);
+        if(ChannelAccessType.PRIVATE.equals(channel.getAccessType())) {
+            throw new IllegalArgumentException("Private 채널의 이름은 변경할 수 없습니다.");
+        }
+        channel.updateChannel(request);
         return ChannelResponse.ofTeam(channel);
     }
 

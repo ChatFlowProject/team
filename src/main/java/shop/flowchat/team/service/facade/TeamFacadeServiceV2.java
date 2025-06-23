@@ -51,7 +51,7 @@ public class TeamFacadeServiceV2 {
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on initializeTeam v2. [status:%s][message:%s]", e.status(), e.getMessage()));
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
+            throw new IllegalArgumentException("initializeTeam - 입력값이 잘못되었습니다.");
         } catch (Exception e) {
             throw new ServiceException(ErrorCode.INTERNAL_SERVER_ERROR);
         }

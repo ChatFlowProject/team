@@ -9,6 +9,7 @@ import shop.flowchat.team.domain.channelmember.ChannelMember;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.domain.BaseEntity;
 import shop.flowchat.team.domain.category.Category;
+import shop.flowchat.team.presentation.dto.channel.request.ChannelUpdateRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +85,10 @@ public class Channel extends BaseEntity {
                 .accessType(ChannelAccessType.PRIVATE)
                 .chatId(chatId)
                 .build();
+    }
+
+    public void updateChannel(ChannelUpdateRequest request) {
+        this.name = request.name();
     }
 
     public void movePosition(Category category, Double positionA, Double positionB) {

@@ -24,7 +24,7 @@ public class TeamMemberService {
         try {
             teamMemberRepository.save(teamMember);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
+            throw new IllegalArgumentException("createTeamMember - 입력값이 잘못되었습니다.");
         }
         return teamMember;
     }

@@ -40,7 +40,7 @@ public class ChannelService {
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on createChannel. [status:%s][message:%s]", e.status(), e.getMessage()));
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
+            throw new IllegalArgumentException("createChannel - 입력값이 잘못되었습니다.");
         }
     }
 
@@ -53,7 +53,7 @@ public class ChannelService {
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on createChannel. [status:%s][message:%s]", e.status(), e.getMessage()));
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("입력값이 잘못되었습니다.");
+            throw new IllegalArgumentException("createPrivateChannel - 입력값이 잘못되었습니다.");
         }
     }
 
