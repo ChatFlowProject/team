@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.presentation.dto.ApiResponse;
+import shop.flowchat.team.presentation.dto.dialog.response.MessageResponse;
 import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
 import shop.flowchat.team.presentation.dto.view.PrivateChannelViewResponse;
 import shop.flowchat.team.service.facade.PrivateChannelService;
@@ -35,13 +36,12 @@ public class PrivateChannelController {
         return ApiResponse.success(privateChannelService.getAllPrivateChannelsForMember(token));
     }
 
-    @Operation(summary = "채널의 메시지 조회") // todo: 수정중
-    @GetMapping("/{channelId}")
-    public ApiResponse getPrivateChannelView(
+    @Operation(summary = "채널 메시지 조회")
+    @GetMapping("/{channelId}/messages")
+    public ApiResponse<List<MessageResponse>> getPrivateChannelView(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("channelId") Long channelId) {
-        privateChannelService.getPrivateChannelMessages(token, channelId);
-        return ApiResponse.success();
+        return ApiResponse.success(privateChannelService.getPrivateChannelMessages(token, channelId));
     }
 
 }

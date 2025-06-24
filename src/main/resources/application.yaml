@@ -31,6 +31,7 @@ spring:
   redis:
     redisson:
       config: |
+        codec: !<org.redisson.codec.JsonJacksonCodec> {}
         clusterServersConfig:
           idleConnectionTimeout: 10000
           connectTimeout: 10000

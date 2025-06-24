@@ -1,5 +1,6 @@
 package shop.flowchat.team.service.facade;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,10 +10,13 @@ import shop.flowchat.team.domain.channel.ChannelType;
 import shop.flowchat.team.domain.channelmember.ChannelMember;
 import shop.flowchat.team.infrastructure.outbox.model.readmodel.friendship.FriendshipReadModel;
 import shop.flowchat.team.infrastructure.outbox.model.readmodel.member.MemberReadModel;
+
+import shop.flowchat.team.infrastructure.redis.RedisService;
 import shop.flowchat.team.infrastructure.repository.readmodel.FriendshipReadModelRepository;
 import shop.flowchat.team.infrastructure.repository.readmodel.MemberReadModelRepository;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.response.ChannelResponse;
+import shop.flowchat.team.presentation.dto.dialog.response.MessageResponse;
 import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
 import shop.flowchat.team.presentation.dto.member.response.MemberInfoResponse;
 import shop.flowchat.team.presentation.dto.view.PrivateChannelViewResponse;
@@ -30,6 +34,7 @@ public class PrivateChannelService {
     private final ChannelMemberService channelMemberService;
     private final FriendshipReadModelRepository friendshipReadModelRepository;
     private final MemberReadModelRepository memberReadModelRepository;
+    private final RedisService redisService;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
@@ -73,8 +78,13 @@ public class PrivateChannelService {
     }
 
     @Transactional(readOnly = true)
-    public void getPrivateChannelMessages(String token, Long channelId) {
-        return;
+    public List<MessageResponse> getPrivateChannelMessages(String token, Long channelId) {
+        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+
+        return redisService.read(
+                memberId.toString() + ":" + channelId.toString(),
+                new TypeReference<>() {
+                });
     }
 
     private PrivateChannelViewResponse makePrivateChannelViewResponse(Channel channel, UUID myMemberId) {

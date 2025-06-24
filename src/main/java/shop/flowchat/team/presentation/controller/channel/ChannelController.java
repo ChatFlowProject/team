@@ -33,7 +33,7 @@ public class ChannelController {
     }
 
     @Operation(summary = "팀 채널 수정")
-    @PostMapping
+    @PutMapping("/{channelId}")
     public ApiResponse<ChannelResponse> createChannel(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("categoryId") Long categoryId,
