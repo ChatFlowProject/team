@@ -26,7 +26,7 @@ public class CategoryController {
     @PostMapping
     public ApiResponse<CategoryCreateResponse> createCategory(
             @PathVariable("teamId") UUID teamId,
-            @Valid @RequestBody CategoryCreateRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
+            @Valid @RequestBody CategoryCreateRequest request) {
         return ApiResponse.success(teamFacadeService.addCategory(teamId, request));
     }
 
@@ -35,7 +35,7 @@ public class CategoryController {
     public ApiResponse<List<CategoryViewResponse>> moveCategory(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("categoryId") Long categoryId,
-            @Valid @RequestBody CategoryMoveRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
+            @Valid @RequestBody CategoryMoveRequest request) {
         return ApiResponse.success(teamFacadeService.moveCategory(teamId, categoryId, request));
     }
 
@@ -43,7 +43,7 @@ public class CategoryController {
     @DeleteMapping("/{categoryId}")
     public ApiResponse deleteCategory(
             @PathVariable("teamId") UUID teamId,
-            @PathVariable("categoryId") Long categoryId) { // todo: 권한 체크 추가 (AuthorizationException)
+            @PathVariable("categoryId") Long categoryId) {
         teamFacadeService.deleteCategory(teamId, categoryId);
         return ApiResponse.success();
     }

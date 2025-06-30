@@ -24,3 +24,9 @@ chatflow:
 
 jwt:
   secret-key: test_user_jwt_token_for_signature
+
+springdoc:
+  swagger-ui:
+    path: /
+  api-docs:
+    path: /v3/api-docs
