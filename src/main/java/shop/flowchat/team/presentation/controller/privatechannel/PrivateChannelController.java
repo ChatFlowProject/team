@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.presentation.dto.ApiResponse;
+import shop.flowchat.team.presentation.dto.channel.result.AddPrivateChannelResult;
 import shop.flowchat.team.presentation.dto.dialog.response.MessageResponse;
 import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
 import shop.flowchat.team.presentation.dto.view.PrivateChannelViewResponse;
@@ -26,7 +27,10 @@ public class PrivateChannelController {
     public ApiResponse<PrivateChannelViewResponse> createPrivateChannel(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @Valid @RequestBody MemberListRequest request) {
-        return ApiResponse.success(privateChannelService.addPrivateChannel(token, request));
+        AddPrivateChannelResult result = privateChannelService.addPrivateChannel(token, request);
+        return result.isCreated()
+                ? ApiResponse.created(result.response())
+                : ApiResponse.success(result.response());
     }
 
     @Operation(summary = "나의 모든 DM 채널 조회")

@@ -16,6 +16,7 @@ import shop.flowchat.team.infrastructure.repository.readmodel.FriendshipReadMode
 import shop.flowchat.team.infrastructure.repository.readmodel.MemberReadModelRepository;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.response.ChannelResponse;
+import shop.flowchat.team.presentation.dto.channel.result.AddPrivateChannelResult;
 import shop.flowchat.team.presentation.dto.dialog.response.MessageResponse;
 import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
 import shop.flowchat.team.presentation.dto.member.response.MemberInfoResponse;
@@ -38,7 +39,7 @@ public class PrivateChannelService {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
-    public PrivateChannelViewResponse addPrivateChannel(String token, MemberListRequest request) {
+    public AddPrivateChannelResult addPrivateChannel(String token, MemberListRequest request) {
         UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
         List<UUID> friendIds = request.memberIds();
         List<FriendshipReadModel> friendships = friendshipReadModelRepository.findByFromMemberIdOrToMemberId(memberId, memberId);
@@ -57,12 +58,12 @@ public class PrivateChannelService {
                 .collect(Collectors.joining(","));
 
         return channelService.findChannelByName(friendNames)
-                .map(channel -> makePrivateChannelViewResponse(channel, memberId))
+                .map(channel -> new AddPrivateChannelResult(makePrivateChannelViewResponse(channel, memberId), false))
                 .orElseGet(() -> {
                     ChannelCreateRequest channelCreateRequest = ChannelCreateRequest.initPrivateChannel(friendNames, ChannelType.TEXT.toString());
                     Channel channel = channelService.createPrivateChannel(channelCreateRequest);
                     channelMemberService.createChannelMembers(friends, channel);
-                    return makePrivateChannelViewResponse(channel, memberId);
+                    return new AddPrivateChannelResult(makePrivateChannelViewResponse(channel, memberId), true);
                 });
     }
 
