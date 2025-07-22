@@ -2,7 +2,7 @@ server:
   port: 8080
 
 tag:
-  version: 1.0.0 # ${VERSION}
+  version: ${VERSION}
 
 chatflow:
   http-url: ${CHATFLOW_HTTP_URL}
