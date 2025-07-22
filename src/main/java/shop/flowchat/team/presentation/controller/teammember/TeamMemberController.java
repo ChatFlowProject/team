@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import shop.flowchat.team.presentation.dto.ApiResponse;
 import shop.flowchat.team.presentation.dto.teammember.request.TeamMemberModifyRoleRequest;
 import shop.flowchat.team.domain.teammember.MemberRole;
+import shop.flowchat.team.presentation.dto.teammember.result.JoinTeamResult;
 import shop.flowchat.team.service.facade.TeamFacadeService;
 
 import java.util.UUID;
@@ -20,12 +21,12 @@ import java.util.UUID;
 public class TeamMemberController {
     private final TeamFacadeService teamFacadeService;
 
-    @Operation(summary = "팀 서버로 친구 초대 (메시지로 초대 코드 전송으로 변경 예정)")
+    @Operation(summary = "팀 서버로 친구 초대 (바로 참여)")
     @PostMapping("/{memberId}")
     public ApiResponse<Long> inviteMember(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId,
-            @PathVariable("memberId") UUID memberId) { // todo: 친구에게 1:1 메시지로 초대 코드 전송 API로 변경
+            @PathVariable("memberId") UUID memberId) {
         return ApiResponse.success(teamFacadeService.addTeamMember(token, teamId, memberId));
     }
 
@@ -34,7 +35,10 @@ public class TeamMemberController {
     public ApiResponse<Long> joinTeam(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId) {
-        return ApiResponse.success(teamFacadeService.joinTeam(token, teamId));
+        JoinTeamResult result = teamFacadeService.joinTeam(token, teamId);
+        return result.isCreated()
+                ? ApiResponse.created(result.id())
+                : ApiResponse.success(result.id());
     }
 
     @Operation(summary = "팀 회원의 권한 수정")

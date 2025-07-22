@@ -11,6 +11,7 @@ import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
 import shop.flowchat.team.infrastructure.repository.teammember.TeamMemberRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -33,6 +34,11 @@ public class TeamMemberService {
     public TeamMember getTeamMemberByTeamIdAndMemberId(UUID teamId, UUID memberId) {
         return teamMemberRepository.findByTeamIdAndMemberId(teamId, memberId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 팀 멤버입니다."));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<TeamMember> findTeamMemberByTeamIdAndMemberId(UUID teamId, UUID memberId) {
+        return teamMemberRepository.findByTeamIdAndMemberId(teamId, memberId);
     }
 
     @Transactional(readOnly = true)

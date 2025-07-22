@@ -33,6 +33,7 @@ import shop.flowchat.team.presentation.dto.team.request.TeamUpdateRequest;
 import shop.flowchat.team.presentation.dto.team.response.TeamCreateResponse;
 import shop.flowchat.team.presentation.dto.team.response.TeamResponse;
 import shop.flowchat.team.presentation.dto.teammember.response.TeamMemberResponse;
+import shop.flowchat.team.presentation.dto.teammember.result.JoinTeamResult;
 import shop.flowchat.team.presentation.dto.view.CategoryViewResponse;
 import shop.flowchat.team.presentation.dto.view.TeamViewResponse;
 import shop.flowchat.team.service.category.CategoryService;
@@ -86,11 +87,13 @@ public class TeamFacadeService {
     }
 
     @Transactional
-    public Long joinTeam(String token, UUID teamId) {
+    public JoinTeamResult joinTeam(String token, UUID teamId) {
         try {
             UUID memberId = memberClient.getMemberInfo(token).data().id();
             Team team = teamService.getTeamById(teamId);
-            return teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER).getId();
+            return teamMemberService.findTeamMemberByTeamIdAndMemberId(teamId, memberId)
+                    .map(teamMember -> new JoinTeamResult(teamMember.getId(), false))
+                    .orElseGet(() -> new JoinTeamResult(teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER).getId(), true));
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on joinTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
