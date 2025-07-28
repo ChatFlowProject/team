@@ -10,12 +10,20 @@ import shop.flowchat.team.common.exception.ErrorCode;
 import shop.flowchat.team.common.exception.custom.ExternalServiceException;
 import shop.flowchat.team.common.exception.custom.ServiceException;
 import shop.flowchat.team.domain.category.Category;
+import shop.flowchat.team.domain.channel.Channel;
 import shop.flowchat.team.domain.channel.ChannelType;
 import shop.flowchat.team.domain.team.Team;
 import shop.flowchat.team.domain.teammember.MemberRole;
+import shop.flowchat.team.domain.teammember.TeamMember;
 import shop.flowchat.team.infrastructure.feign.MemberClient;
+import shop.flowchat.team.infrastructure.outbox.event.category.CategoryCreateEvent;
+import shop.flowchat.team.infrastructure.outbox.event.channel.ChannelCreateEvent;
 import shop.flowchat.team.infrastructure.outbox.event.team.TeamCreateEvent;
+import shop.flowchat.team.infrastructure.outbox.event.teammember.TeamMemberCreateEvent;
+import shop.flowchat.team.infrastructure.outbox.payload.CategoryEventPayload;
+import shop.flowchat.team.infrastructure.outbox.payload.ChannelEventPayload;
 import shop.flowchat.team.infrastructure.outbox.payload.TeamEventPayload;
+import shop.flowchat.team.infrastructure.outbox.payload.TeamMemberEventPayload;
 import shop.flowchat.team.presentation.dto.category.request.CategoryCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.team.request.TeamCreateRequest;
@@ -42,11 +50,14 @@ public class TeamFacadeServiceV2 {
         try { // todo: 시그널링 서버 추가시 VOICE 타입 채널 및 카테고리 생성
             UUID memberId = memberClient.getMemberInfo(token).data().id();
             Team team = teamService.createTeam(request, memberId);
-            teamMemberService.createTeamMember(team, memberId, MemberRole.OWNER);
+            TeamMember teamMember = teamMemberService.createTeamMember(team, memberId, MemberRole.OWNER);
             Category category = categoryService.createCategory(CategoryCreateRequest.init(), team);
-            channelService.createChannel(ChannelCreateRequest.initChannel(ChannelType.TEXT.toString()), category);
+            Channel channel = channelService.createChannel(ChannelCreateRequest.initChannel(ChannelType.TEXT.toString()), category);
 
             eventPublisher.publishEvent(new TeamCreateEvent(team.getId().toString(), TeamEventPayload.from(team)));
+            eventPublisher.publishEvent(new TeamMemberCreateEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(teamMember)));
+            eventPublisher.publishEvent(new CategoryCreateEvent(category.getId().toString(), CategoryEventPayload.from(category)));
+            eventPublisher.publishEvent(new ChannelCreateEvent(channel.getId().toString(), ChannelEventPayload.from(channel)));
             return TeamCreateResponse.from(team.getId());
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on initializeTeam v2. [status:%s][message:%s]", e.status(), e.getMessage()));

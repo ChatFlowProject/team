@@ -2,6 +2,7 @@ package shop.flowchat.team.service.facade;
 
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,19 @@ import shop.flowchat.team.domain.team.Team;
 import shop.flowchat.team.domain.teammember.MemberRole;
 import shop.flowchat.team.domain.teammember.TeamMember;
 import shop.flowchat.team.infrastructure.feign.MemberClient;
+import shop.flowchat.team.infrastructure.outbox.event.category.CategoryCreateEvent;
+import shop.flowchat.team.infrastructure.outbox.event.category.CategoryDeleteEvent;
+import shop.flowchat.team.infrastructure.outbox.event.channel.ChannelCreateEvent;
+import shop.flowchat.team.infrastructure.outbox.event.channel.ChannelDeleteEvent;
+import shop.flowchat.team.infrastructure.outbox.event.channel.ChannelUpdateEvent;
+import shop.flowchat.team.infrastructure.outbox.event.team.TeamDeleteEvent;
+import shop.flowchat.team.infrastructure.outbox.event.team.TeamUpdateEvent;
+import shop.flowchat.team.infrastructure.outbox.event.teammember.TeamMemberCreateEvent;
+import shop.flowchat.team.infrastructure.outbox.event.teammember.TeamMemberDeleteEvent;
+import shop.flowchat.team.infrastructure.outbox.payload.CategoryEventPayload;
+import shop.flowchat.team.infrastructure.outbox.payload.ChannelEventPayload;
+import shop.flowchat.team.infrastructure.outbox.payload.TeamEventPayload;
+import shop.flowchat.team.infrastructure.outbox.payload.TeamMemberEventPayload;
 import shop.flowchat.team.presentation.dto.category.request.CategoryCreateRequest;
 import shop.flowchat.team.presentation.dto.category.request.CategoryMoveRequest;
 import shop.flowchat.team.presentation.dto.category.response.CategoryCreateResponse;
@@ -55,6 +69,7 @@ public class TeamFacadeService {
     private final ChannelService channelService;
     private final TeamMemberService teamMemberService;
     private final MemberClient memberClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public TeamCreateResponse initializeTeam(String token, TeamCreateRequest request) {
@@ -80,7 +95,9 @@ public class TeamFacadeService {
             Boolean isFriend = memberClient.checkFriendship(token, memberId).data();
             if (!isFriend) throw new AuthorizationException("초대 대상과 친구 관계가 아닙니다.");
             Team team = teamService.getTeamById(teamId);
-            return teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER).getId();
+            TeamMember teamMember = teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER);
+            eventPublisher.publishEvent(new TeamMemberCreateEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(teamMember)));
+            return teamMember.getId();
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on addTeamMember. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
@@ -93,7 +110,12 @@ public class TeamFacadeService {
             Team team = teamService.getTeamById(teamId);
             return teamMemberService.findTeamMemberByTeamIdAndMemberId(teamId, memberId)
                     .map(teamMember -> new JoinTeamResult(teamMember.getId(), false))
-                    .orElseGet(() -> new JoinTeamResult(teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER).getId(), true));
+                    .orElseGet(() -> {
+                        TeamMember teamMember = teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER);
+                        eventPublisher.publishEvent(new TeamMemberCreateEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(
+                                teamMember)));
+                        return new JoinTeamResult(teamMember.getId(), true);
+                    });
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on joinTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
@@ -103,6 +125,7 @@ public class TeamFacadeService {
     public CategoryCreateResponse addCategory(UUID teamId, CategoryCreateRequest request) {
         Team team = teamService.getTeamById(teamId);
         Category category = categoryService.createCategory(request, team);
+        eventPublisher.publishEvent(new CategoryCreateEvent(category.getId().toString(), CategoryEventPayload.from(category)));
         return CategoryCreateResponse.from(category.getId(), category.getPosition());
     }
 
@@ -110,6 +133,7 @@ public class TeamFacadeService {
     public ChannelResponse addChannel(UUID teamId, Long categoryId, ChannelCreateRequest request) {
         Category category = categoryService.validateTeamCategory(teamId, categoryId);
         Channel channel = channelService.createChannel(request, category);
+        eventPublisher.publishEvent(new ChannelCreateEvent(channel.getId().toString(), ChannelEventPayload.from(channel)));
         return ChannelResponse.ofTeam(channel);
     }
 
@@ -121,6 +145,7 @@ public class TeamFacadeService {
             throw new IllegalArgumentException("Private 채널의 이름은 변경할 수 없습니다.");
         }
         channel.updateChannel(request);
+        eventPublisher.publishEvent(new ChannelUpdateEvent(channel.getId().toString(), ChannelEventPayload.from(channel)));
         return ChannelResponse.ofTeam(channel);
     }
 
@@ -190,6 +215,7 @@ public class TeamFacadeService {
         try {
             UUID memberId = memberClient.getMemberInfo(token).data().id();
             Team team = teamService.validateTeamMaster(teamId, memberId);
+            eventPublisher.publishEvent(new TeamUpdateEvent(team.getId().toString(), TeamEventPayload.from(team)));
             return TeamResponse.from(team.updateTeam(request));
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on updateTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
@@ -248,6 +274,7 @@ public class TeamFacadeService {
             }
             teamMemberService.deleteAllByTeam(team);
             teamService.deleteTeam(team);
+            eventPublisher.publishEvent(new TeamDeleteEvent(team.getId().toString(), TeamEventPayload.from(team)));
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on deleteTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
@@ -257,7 +284,8 @@ public class TeamFacadeService {
     public void leaveTeam(String token, UUID teamId) {
         try {
             UUID memberId = memberClient.getMemberInfo(token).data().id();
-            teamMemberService.deleteByTeamIdAndMemberId(teamId, memberId);
+            TeamMember teamMember = teamMemberService.deleteByTeamIdAndMemberId(teamId, memberId);
+            eventPublisher.publishEvent(new TeamMemberDeleteEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(teamMember)));
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on leaveTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
@@ -267,7 +295,8 @@ public class TeamFacadeService {
     public void kickTeamMember(String token, UUID teamId, UUID targetId) {
         try {
             memberClient.getMemberInfo(token).data().id();
-            teamMemberService.deleteByTeamIdAndMemberId(teamId, targetId);
+            TeamMember teamMember = teamMemberService.deleteByTeamIdAndMemberId(teamId, targetId);
+            eventPublisher.publishEvent(new TeamMemberDeleteEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(teamMember)));
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on kickTeamMember. [status:%s][message:%s]", e.status(), e.getMessage()));
         }
@@ -278,6 +307,7 @@ public class TeamFacadeService {
         Category category = categoryService.validateTeamCategory(teamId, categoryId);
         channelService.deleteChannelsByCategory(category);
         categoryService.deleteCategory(category);
+        eventPublisher.publishEvent(new CategoryDeleteEvent(category.getId().toString(), CategoryEventPayload.from(category)));
     }
 
     @Transactional
@@ -285,6 +315,7 @@ public class TeamFacadeService {
         // todo: teamId & memberId(token) -> 권한 체크 로직 필요
         Channel channel = channelService.validateCategoryChannel(categoryId, channelId);
         channelService.deleteChannel(channel);
+        eventPublisher.publishEvent(new ChannelDeleteEvent(channel.getId().toString(), ChannelEventPayload.from(channel)));
     }
 
 }
