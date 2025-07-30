@@ -16,14 +16,8 @@ import shop.flowchat.team.domain.team.Team;
 import shop.flowchat.team.domain.teammember.MemberRole;
 import shop.flowchat.team.domain.teammember.TeamMember;
 import shop.flowchat.team.infrastructure.feign.MemberClient;
-import shop.flowchat.team.infrastructure.outbox.event.category.CategoryCreateEvent;
-import shop.flowchat.team.infrastructure.outbox.event.channel.ChannelCreateEvent;
 import shop.flowchat.team.infrastructure.outbox.event.team.TeamCreateEvent;
-import shop.flowchat.team.infrastructure.outbox.event.teammember.TeamMemberCreateEvent;
-import shop.flowchat.team.infrastructure.outbox.payload.CategoryEventPayload;
-import shop.flowchat.team.infrastructure.outbox.payload.ChannelEventPayload;
-import shop.flowchat.team.infrastructure.outbox.payload.TeamEventPayload;
-import shop.flowchat.team.infrastructure.outbox.payload.TeamMemberEventPayload;
+import shop.flowchat.team.infrastructure.outbox.payload.TeamInitializationPayload;
 import shop.flowchat.team.presentation.dto.category.request.CategoryCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.team.request.TeamCreateRequest;
@@ -54,10 +48,7 @@ public class TeamFacadeServiceV2 {
             Category category = categoryService.createCategory(CategoryCreateRequest.init(), team);
             Channel channel = channelService.createChannel(ChannelCreateRequest.initChannel(ChannelType.TEXT.toString()), category);
 
-            eventPublisher.publishEvent(new TeamCreateEvent(team.getId().toString(), TeamEventPayload.from(team)));
-            eventPublisher.publishEvent(new TeamMemberCreateEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(teamMember)));
-            eventPublisher.publishEvent(new CategoryCreateEvent(category.getId().toString(), CategoryEventPayload.from(category)));
-            eventPublisher.publishEvent(new ChannelCreateEvent(channel.getId().toString(), ChannelEventPayload.from(channel)));
+            eventPublisher.publishEvent(new TeamCreateEvent(team.getId().toString(), TeamInitializationPayload.from(team, teamMember, category, channel)));
             return TeamCreateResponse.from(team.getId());
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on initializeTeam v2. [status:%s][message:%s]", e.status(), e.getMessage()));
