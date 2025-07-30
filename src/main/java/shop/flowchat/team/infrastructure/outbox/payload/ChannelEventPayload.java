@@ -10,7 +10,8 @@ public record ChannelEventPayload(
         Long id,
         String name,
         ChannelAccessType channelAccessType,
-        Long teamId,
+        Long categoryId,
+        UUID chatId,
         LocalDateTime timestamp
 ) {
     public static ChannelEventPayload from(Channel channel) {
@@ -19,6 +20,7 @@ public record ChannelEventPayload(
                 channel.getName(),
                 channel.getAccessType(),
                 channel.getCategory().getId(),
+                channel.getChatId(),
                 LocalDateTime.now()
         );
     }
