@@ -50,7 +50,7 @@ public class ChannelService {
     @Transactional
     public Channel createPrivateChannel(ChannelCreateRequest request) {
         try {
-            UUID chatId = UUID.randomUUID();// dialogClient.createChat().data().chatId();
+            UUID chatId = dialogClient.createChat().data().chatId();
             Channel channel = Channel.ofPrivate(request, chatId);
             return channelRepository.save(channel);
         } catch (FeignException e) {
@@ -87,7 +87,7 @@ public class ChannelService {
     }
 
     @Transactional(readOnly = true)
-    public Channel validateCategoryChannel(Long categoryId, Long channelId) {
+    public Channel getAndValidateCategoryChannel(Long categoryId, Long channelId) {
         Channel channel = getChannelById(channelId);
         if (!channel.getCategory().getId().equals(categoryId)) {
             throw new AuthorizationException("채널의 카테고리 ID가 올바르지 않습니다.");

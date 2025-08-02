@@ -22,7 +22,7 @@ public class FriendshipReadModel extends BaseEntity {
 
     @Id
     @Column(nullable = false, updatable = false)
-    private String id; // "fromMemberId:toMemberId" 형태의 정렬된 aggregateId (fromMemberId가 toMemberId보다 큼)
+    private String id; // "MemberIdA:MemberIdB" (A > B)
 
     @Column(nullable = false, columnDefinition = "BINARY(16)")
     private UUID fromMemberId;

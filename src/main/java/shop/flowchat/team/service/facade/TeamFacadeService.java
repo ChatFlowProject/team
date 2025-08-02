@@ -2,6 +2,7 @@ package shop.flowchat.team.service.facade;
 
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,14 +11,18 @@ import shop.flowchat.team.common.exception.custom.AuthorizationException;
 import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
 import shop.flowchat.team.common.exception.custom.ExternalServiceException;
 import shop.flowchat.team.common.exception.custom.ServiceException;
+import shop.flowchat.team.common.util.JwtTokenProvider;
 import shop.flowchat.team.domain.category.Category;
 import shop.flowchat.team.domain.channel.Channel;
 import shop.flowchat.team.domain.channel.ChannelAccessType;
 import shop.flowchat.team.domain.channel.ChannelType;
 import shop.flowchat.team.domain.team.Team;
 import shop.flowchat.team.domain.teammember.MemberRole;
+import shop.flowchat.team.domain.teammember.Permission;
 import shop.flowchat.team.domain.teammember.TeamMember;
-import shop.flowchat.team.infrastructure.feign.MemberClient;
+import shop.flowchat.team.infrastructure.outbox.event.team.TeamCreateEvent;
+import shop.flowchat.team.infrastructure.outbox.model.readmodel.member.MemberReadModel;
+import shop.flowchat.team.infrastructure.outbox.payload.TeamEventPayload;
 import shop.flowchat.team.presentation.dto.category.request.CategoryCreateRequest;
 import shop.flowchat.team.presentation.dto.category.request.CategoryMoveRequest;
 import shop.flowchat.team.presentation.dto.category.response.CategoryCreateResponse;
@@ -26,8 +31,7 @@ import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelMoveRequest;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelUpdateRequest;
 import shop.flowchat.team.presentation.dto.channel.response.ChannelResponse;
-import shop.flowchat.team.presentation.dto.member.request.MemberListRequest;
-import shop.flowchat.team.presentation.dto.member.response.MemberResponse;
+import shop.flowchat.team.presentation.dto.member.response.MemberInfoResponse;
 import shop.flowchat.team.presentation.dto.team.request.TeamCreateRequest;
 import shop.flowchat.team.presentation.dto.team.request.TeamUpdateRequest;
 import shop.flowchat.team.presentation.dto.team.response.TeamCreateResponse;
@@ -38,6 +42,7 @@ import shop.flowchat.team.presentation.dto.view.CategoryViewResponse;
 import shop.flowchat.team.presentation.dto.view.TeamViewResponse;
 import shop.flowchat.team.service.category.CategoryService;
 import shop.flowchat.team.service.channel.ChannelService;
+import shop.flowchat.team.service.readmodel.MemberReadModelService;
 import shop.flowchat.team.service.team.TeamService;
 import shop.flowchat.team.service.teammember.TeamMemberService;
 
@@ -54,16 +59,19 @@ public class TeamFacadeService {
     private final CategoryService categoryService;
     private final ChannelService channelService;
     private final TeamMemberService teamMemberService;
-    private final MemberClient memberClient;
+    private final MemberReadModelService memberReadModelService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public TeamCreateResponse initializeTeam(String token, TeamCreateRequest request) {
-        try { // todo: 시그널링 서버 추가시 VOICE 타입 채널 및 카테고리 생성
-            UUID memberId = memberClient.getMemberInfo(token).data().id();
+        try {
+            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
             Team team = teamService.createTeam(request, memberId);
             teamMemberService.createTeamMember(team, memberId, MemberRole.OWNER);
             Category category = categoryService.createCategory(CategoryCreateRequest.init(), team);
             channelService.createChannel(ChannelCreateRequest.initChannel(ChannelType.TEXT.toString()), category);
+            eventPublisher.publishEvent(new TeamCreateEvent(team.getId().toString(), TeamEventPayload.from(team)));
             return TeamCreateResponse.from(team.getId());
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on initializeTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
@@ -75,21 +83,9 @@ public class TeamFacadeService {
     }
 
     @Transactional
-    public Long addTeamMember(String token, UUID teamId, UUID memberId) {
-        try {
-            Boolean isFriend = memberClient.checkFriendship(token, memberId).data();
-            if (!isFriend) throw new AuthorizationException("초대 대상과 친구 관계가 아닙니다.");
-            Team team = teamService.getTeamById(teamId);
-            return teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER).getId();
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on addTeamMember. [status:%s][message:%s]", e.status(), e.getMessage()));
-        }
-    }
-
-    @Transactional
     public JoinTeamResult joinTeam(String token, UUID teamId) {
         try {
-            UUID memberId = memberClient.getMemberInfo(token).data().id();
+            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
             Team team = teamService.getTeamById(teamId);
             return teamMemberService.findTeamMemberByTeamIdAndMemberId(teamId, memberId)
                     .map(teamMember -> new JoinTeamResult(teamMember.getId(), false))
@@ -108,16 +104,18 @@ public class TeamFacadeService {
 
     @Transactional
     public ChannelResponse addChannel(UUID teamId, Long categoryId, ChannelCreateRequest request) {
-        Category category = categoryService.validateTeamCategory(teamId, categoryId);
+        // todo: 권한 체크
+        Category category = categoryService.getAndValidateTeamCategory(teamId, categoryId);
         Channel channel = channelService.createChannel(request, category);
         return ChannelResponse.ofTeam(channel);
     }
 
     @Transactional
     public ChannelResponse updateChannel(UUID teamId, Long categoryId, Long channelId, ChannelUpdateRequest request) {
-        categoryService.validateTeamCategory(teamId, categoryId);
+        // todo: 권한 체크
+        categoryService.getAndValidateTeamCategory(teamId, categoryId);
         Channel channel = channelService.getChannelById(channelId);
-        if(ChannelAccessType.PRIVATE.equals(channel.getAccessType())) {
+        if (ChannelAccessType.PRIVATE.equals(channel.getAccessType())) {
             throw new IllegalArgumentException("Private 채널의 이름은 변경할 수 없습니다.");
         }
         channel.updateChannel(request);
@@ -127,7 +125,7 @@ public class TeamFacadeService {
     @Transactional(readOnly = true)
     public List<TeamResponse> getAllTeams(String token) {
         try {
-            UUID memberId = memberClient.getMemberInfo(token).data().id();
+            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
             return teamMemberService.getTeamMembersByMemberId(memberId).stream()
                     .map(teamMember -> TeamResponse.from(teamMember.getTeam()))
                     .collect(Collectors.toList());
@@ -139,30 +137,28 @@ public class TeamFacadeService {
     @Transactional(readOnly = true)
     public TeamViewResponse getTeamView(String token, UUID teamId) {
         try {
-            // Team 서버 및 TeamMember들 조회 (fetch join으로 Team까지 조회)
             List<TeamMember> teamMembers = teamMemberService.getTeamMembersByTeamId(teamId);
-            if (teamMembers.size() == 0) { // 팀 마스터는 서버를 나갈 수 없으므로 teamMember 수가 0이면 삭제된 서버
+            if (teamMembers.size() == 0) {
                 throw new EntityNotFoundException("존재하지 않는 팀 서버입니다.");
             }
-            // TeamMember의 회원 정보 조회
-            MemberResponse memberResponse = memberClient.getMemberInfoList(token,
-                    MemberListRequest.from(teamMembers.stream().map(TeamMember::getMemberId).toList())).data();
-            // 해당 팀 서버 조회 요청자의 권한 체크
-            if (teamMembers.stream().noneMatch(tm -> tm.getMemberId().equals(memberResponse.requester()))) {
+            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+            if (teamMembers.stream().noneMatch(tm -> tm.getMemberId().equals(memberId))) {
                 throw new AuthorizationException("해당 팀 서버의 회원이 아닙니다.");
             }
-            // 팀 멤버들 정보 응답
+
+            List<MemberReadModel> members = memberReadModelService.getMembersByMemberIds(teamMembers.stream().map(TeamMember::getMemberId).toList());
             List<TeamMemberResponse> teamMemberResponses = teamMembers.stream()
-                    .map(teamMember -> TeamMemberResponse.from(
-                            teamMember,
-                            memberResponse.memberList().stream()
-                                    .filter(member -> member.id().equals(teamMember.getMemberId()))
-                                    .findFirst()
-                                    .orElse(null))) // teamMember와 일치하는 memberResponse가 없는 경우 - 탈퇴한 회원의 경우?
+                    .map(teamMember -> {
+                        MemberReadModel member = members.stream()
+                                .filter(m -> m.getId().equals(teamMember.getMemberId()))
+                                .findFirst()
+                                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다. : " + teamMember.getMemberId()));
+                        return TeamMemberResponse.from(teamMember, MemberInfoResponse.from(member));
+                    })
                     .collect(Collectors.toList());
 
-            TeamResponse teamResponse = TeamResponse.from(teamMembers.get(0).getTeam()); // 팀 서버 정보 응답
-            List<CategoryViewResponse> categoryViewResponses = getCategoryView(teamMembers.get(0).getTeam());// 팀 서버의 카테고리 및 채널 정보 응답
+            TeamResponse teamResponse = TeamResponse.from(teamMembers.get(0).getTeam());
+            List<CategoryViewResponse> categoryViewResponses = getCategoryView(teamMembers.get(0).getTeam());
             return TeamViewResponse.from(teamResponse, categoryViewResponses, teamMemberResponses);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on getTeamView. [status:%s][message:%s]", e.status(), e.getMessage()));
@@ -188,7 +184,7 @@ public class TeamFacadeService {
     @Transactional
     public TeamResponse updateTeam(String token, UUID teamId, TeamUpdateRequest request) {
         try {
-            UUID memberId = memberClient.getMemberInfo(token).data().id();
+            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
             Team team = teamService.validateTeamMaster(teamId, memberId);
             return TeamResponse.from(team.updateTeam(request));
         } catch (FeignException e) {
@@ -199,7 +195,16 @@ public class TeamFacadeService {
     @Transactional
     public void modifyTeamMemberRole(String token, UUID teamId, UUID targetId, MemberRole role) {
         try {
-            memberClient.getMemberInfo(token).data().id();
+            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+            TeamMember requester = teamMemberService.getTeamMemberByTeamIdAndMemberId(teamId, memberId);
+
+            if (!requester.getRole().getPermissions().contains(Permission.UPDATE)) {
+                throw new AuthorizationException("UPDATE 권한이 없습니다");
+            }
+            if (requester.getMemberId().equals(targetId)) {
+                throw new IllegalArgumentException("자기 자신의 역할은 수정할 수 없습니다.");
+            }
+
             teamMemberService.modifyMemberRole(teamId, targetId, role);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on modifyTeamMemberRole. [status:%s][message:%s]", e.status(), e.getMessage()));
@@ -218,7 +223,7 @@ public class TeamFacadeService {
 
     @Transactional
     public List<CategoryViewResponse> moveChannel(UUID teamId, Long categoryId, Long channelId, ChannelMoveRequest request) {
-        // todo: teamId & memberId(token) -> 권한 체크 로직 필요
+        // todo: 권한 체크
         List<Long> categoryIds = Stream.of(categoryId, request.destCategoryId())
                 .distinct() // 중복 제거 - 같은 카테고리내 이동인 경우
                 .collect(Collectors.toList());
@@ -233,13 +238,13 @@ public class TeamFacadeService {
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("목적지 카테고리를 찾을 수 없습니다: " + request.destCategoryId()));
         channelService.moveChannel(channelId, destCategory, channels, request);
-        return getCategoryView(categories.get(0).getTeam()); // todo: 왜 쿼리 나감?
+        return getCategoryView(categories.get(0).getTeam());
     }
 
     @Transactional
     public void deleteTeam(String token, UUID teamId) {
         try {
-            UUID memberId = memberClient.getMemberInfo(token).data().id();
+            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
             Team team = teamService.validateTeamMaster(teamId, memberId);
             List<Category> categories = categoryService.getCategoryByTeam(team);
             if (!categories.isEmpty()) {
@@ -256,7 +261,7 @@ public class TeamFacadeService {
     @Transactional
     public void leaveTeam(String token, UUID teamId) {
         try {
-            UUID memberId = memberClient.getMemberInfo(token).data().id();
+            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
             teamMemberService.deleteByTeamIdAndMemberId(teamId, memberId);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on leaveTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
@@ -266,7 +271,16 @@ public class TeamFacadeService {
     @Transactional
     public void kickTeamMember(String token, UUID teamId, UUID targetId) {
         try {
-            memberClient.getMemberInfo(token).data().id();
+            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+            TeamMember requester = teamMemberService.getTeamMemberByTeamIdAndMemberId(teamId, memberId);
+
+            if (!requester.getRole().getPermissions().contains(Permission.DELETE)) {
+                throw new AuthorizationException("DELETE 권한이 없습니다");
+            }
+            if (requester.getMemberId().equals(targetId)) {
+                throw new IllegalArgumentException("자기 자신을 추방할 수 없습니다.");
+            }
+
             teamMemberService.deleteByTeamIdAndMemberId(teamId, targetId);
         } catch (FeignException e) {
             throw new ExternalServiceException(String.format("Failed to get response on kickTeamMember. [status:%s][message:%s]", e.status(), e.getMessage()));
@@ -275,15 +289,15 @@ public class TeamFacadeService {
 
     @Transactional
     public void deleteCategory(UUID teamId, Long categoryId) {
-        Category category = categoryService.validateTeamCategory(teamId, categoryId);
+        Category category = categoryService.getAndValidateTeamCategory(teamId, categoryId);
         channelService.deleteChannelsByCategory(category);
         categoryService.deleteCategory(category);
     }
 
     @Transactional
     public void deleteChannel(UUID teamId, Long categoryId, Long channelId) {
-        // todo: teamId & memberId(token) -> 권한 체크 로직 필요
-        Channel channel = channelService.validateCategoryChannel(categoryId, channelId);
+        // todo: 권한 체크
+        Channel channel = channelService.getAndValidateCategoryChannel(categoryId, channelId);
         channelService.deleteChannel(channel);
     }
 

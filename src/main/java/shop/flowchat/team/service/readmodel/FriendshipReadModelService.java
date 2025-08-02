@@ -7,10 +7,18 @@ import shop.flowchat.team.infrastructure.messaging.friendship.FriendshipEventPay
 import shop.flowchat.team.infrastructure.outbox.model.readmodel.friendship.FriendshipReadModel;
 import shop.flowchat.team.infrastructure.repository.readmodel.FriendshipReadModelRepository;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class FriendshipReadModelService {
     private final FriendshipReadModelRepository repository;
+
+    @Transactional(readOnly = true)
+    public List<FriendshipReadModel> getAllFriendshipsByMemberId(UUID memberId) {
+        return repository.findByFromMemberIdOrToMemberId(memberId, memberId);
+    }
 
     @Transactional
     public void create(FriendshipEventPayload payload) {

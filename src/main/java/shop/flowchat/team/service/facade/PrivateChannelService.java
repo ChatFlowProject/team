@@ -10,9 +10,7 @@ import shop.flowchat.team.domain.channel.ChannelType;
 import shop.flowchat.team.domain.channelmember.ChannelMember;
 import shop.flowchat.team.infrastructure.outbox.model.readmodel.friendship.FriendshipReadModel;
 import shop.flowchat.team.infrastructure.outbox.model.readmodel.member.MemberReadModel;
-
 import shop.flowchat.team.infrastructure.redis.RedisService;
-import shop.flowchat.team.infrastructure.repository.readmodel.FriendshipReadModelRepository;
 import shop.flowchat.team.infrastructure.repository.readmodel.MemberReadModelRepository;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
 import shop.flowchat.team.presentation.dto.channel.response.ChannelResponse;
@@ -23,6 +21,7 @@ import shop.flowchat.team.presentation.dto.member.response.MemberInfoResponse;
 import shop.flowchat.team.presentation.dto.view.PrivateChannelViewResponse;
 import shop.flowchat.team.service.channel.ChannelService;
 import shop.flowchat.team.service.channelmember.ChannelMemberService;
+import shop.flowchat.team.service.readmodel.FriendshipReadModelService;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,7 +32,7 @@ import java.util.stream.Collectors;
 public class PrivateChannelService {
     private final ChannelService channelService;
     private final ChannelMemberService channelMemberService;
-    private final FriendshipReadModelRepository friendshipReadModelRepository;
+    private final FriendshipReadModelService friendshipReadModelService;
     private final MemberReadModelRepository memberReadModelRepository;
     private final RedisService redisService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -42,7 +41,7 @@ public class PrivateChannelService {
     public AddPrivateChannelResult addPrivateChannel(String token, MemberListRequest request) {
         UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
         List<UUID> friendIds = request.memberIds();
-        List<FriendshipReadModel> friendships = friendshipReadModelRepository.findByFromMemberIdOrToMemberId(memberId, memberId);
+        List<FriendshipReadModel> friendships = friendshipReadModelService.getAllFriendshipsByMemberId(memberId);
         if (friendIds.stream()
                 .anyMatch(friendId -> friendships.stream()
                         .allMatch(friend -> !friend.getFromMemberId().equals(friendId) && !friend.getToMemberId().equals(friendId)))) {
@@ -70,7 +69,6 @@ public class PrivateChannelService {
     @Transactional(readOnly = true)
     public List<PrivateChannelViewResponse> getAllPrivateChannelsForMember(String token) {
         UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-
         List<Channel> channels = channelService.getAllPrivateChannelsByMemberId(memberId);
 
         return channels.stream()

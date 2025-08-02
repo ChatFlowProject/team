@@ -7,11 +7,20 @@ import shop.flowchat.team.infrastructure.messaging.member.MemberEventPayload;
 import shop.flowchat.team.infrastructure.outbox.model.readmodel.member.MemberReadModel;
 import shop.flowchat.team.infrastructure.repository.readmodel.MemberReadModelRepository;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class MemberReadModelService {
 
     private final MemberReadModelRepository repository;
+
+    @Transactional(readOnly = true)
+    public List<MemberReadModel> getMembersByMemberIds(List<UUID> memberIds) {
+        return repository.findByIdIn(memberIds);
+    }
+
 
     @Transactional
     public void create(MemberEventPayload payload) {

@@ -21,15 +21,6 @@ import java.util.UUID;
 public class TeamMemberController {
     private final TeamFacadeService teamFacadeService;
 
-    @Operation(summary = "팀 서버로 친구 초대 (바로 참여)")
-    @PostMapping("/{memberId}")
-    public ApiResponse<Long> inviteMember(
-            @Parameter(hidden = true) @RequestHeader("Authorization") String token,
-            @PathVariable("teamId") UUID teamId,
-            @PathVariable("memberId") UUID memberId) {
-        return ApiResponse.success(teamFacadeService.addTeamMember(token, teamId, memberId));
-    }
-
     @Operation(summary = "팀 서버 코드로 팀 참여(내가 참여)")
     @PostMapping
     public ApiResponse<Long> joinTeam(
@@ -47,7 +38,7 @@ public class TeamMemberController {
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId,
             @PathVariable("targetId") UUID targetId,
-            @Valid @RequestBody TeamMemberModifyRoleRequest request) { // todo: 권한 체크 추가 (AuthorizationException)
+            @Valid @RequestBody TeamMemberModifyRoleRequest request) {
         teamFacadeService.modifyTeamMemberRole(token, teamId, targetId, MemberRole.of(request.memberRole()));
         return ApiResponse.success();
     }
@@ -66,7 +57,7 @@ public class TeamMemberController {
     public ApiResponse kickTeamMember(
             @Parameter(hidden = true) @RequestHeader("Authorization") String token,
             @PathVariable("teamId") UUID teamId,
-            @PathVariable("targetId") UUID targetId) { // todo: 권한 체크 추가 (AuthorizationException)
+            @PathVariable("targetId") UUID targetId) {
         teamFacadeService.kickTeamMember(token, teamId, targetId);
         return ApiResponse.success();
     }

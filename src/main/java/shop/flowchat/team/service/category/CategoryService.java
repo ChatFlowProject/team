@@ -43,7 +43,7 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public Category validateTeamCategory(UUID teamId, Long categoryId) {
+    public Category getAndValidateTeamCategory(UUID teamId, Long categoryId) {
         Category category = getCategoryById(categoryId);
         if (!category.getTeam().getId().equals(teamId)) {
             throw new AuthorizationException("카테고리의 팀 ID가 올바르지 않습니다.");

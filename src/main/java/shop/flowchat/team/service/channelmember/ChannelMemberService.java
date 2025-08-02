@@ -22,7 +22,6 @@ public class ChannelMemberService {
             channel.addChannelMember(channelMember); // 연관관계 양방향 설정
         }
 
-        // saveAll 안 해도 됨 cascade = ALL -> channel save 시 자동 저장
         // channelMemberRepository.saveAll(channelMembers);
     }
 
