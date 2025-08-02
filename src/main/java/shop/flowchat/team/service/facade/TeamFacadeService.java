@@ -1,6 +1,5 @@
 package shop.flowchat.team.service.facade;
 
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -9,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import shop.flowchat.team.common.exception.ErrorCode;
 import shop.flowchat.team.common.exception.custom.AuthorizationException;
 import shop.flowchat.team.common.exception.custom.EntityNotFoundException;
-import shop.flowchat.team.common.exception.custom.ExternalServiceException;
 import shop.flowchat.team.common.exception.custom.ServiceException;
 import shop.flowchat.team.common.util.JwtTokenProvider;
 import shop.flowchat.team.domain.category.Category;
@@ -91,20 +89,16 @@ public class TeamFacadeService {
 
     @Transactional
     public JoinTeamResult joinTeam(String token, UUID teamId) {
-        try {
-            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-            Team team = teamService.getTeamById(teamId);
-            return teamMemberService.findTeamMemberByTeamIdAndMemberId(teamId, memberId)
-                    .map(teamMember -> new JoinTeamResult(teamMember.getId(), false))
-                    .orElseGet(() -> {
-                        TeamMember teamMember = teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER);
-                        eventPublisher.publishEvent(new TeamMemberCreateEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(
-                                teamMember)));
-                        return new JoinTeamResult(teamMember.getId(), true);
-                    });
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on joinTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
-        }
+        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Team team = teamService.getTeamById(teamId);
+        return teamMemberService.findTeamMemberByTeamIdAndMemberId(teamId, memberId)
+                .map(teamMember -> new JoinTeamResult(teamMember.getId(), false))
+                .orElseGet(() -> {
+                    TeamMember teamMember = teamMemberService.createTeamMember(team, memberId, MemberRole.MEMBER);
+                    eventPublisher.publishEvent(new TeamMemberCreateEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(
+                            teamMember)));
+                    return new JoinTeamResult(teamMember.getId(), true);
+                });
     }
 
     @Transactional
@@ -139,45 +133,37 @@ public class TeamFacadeService {
 
     @Transactional(readOnly = true)
     public List<TeamResponse> getAllTeams(String token) {
-        try {
-            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-            return teamMemberService.getTeamMembersByMemberId(memberId).stream()
-                    .map(teamMember -> TeamResponse.from(teamMember.getTeam()))
-                    .collect(Collectors.toList());
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on getAllTeams. [status:%s][message:%s]", e.status(), e.getMessage()));
-        }
+        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        return teamMemberService.getTeamMembersByMemberId(memberId).stream()
+                .map(teamMember -> TeamResponse.from(teamMember.getTeam()))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public TeamViewResponse getTeamView(String token, UUID teamId) {
-        try {
-            List<TeamMember> teamMembers = teamMemberService.getTeamMembersByTeamId(teamId);
-            if (teamMembers.size() == 0) {
-                throw new EntityNotFoundException("존재하지 않는 팀 서버입니다.");
-            }
-            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-            if (teamMembers.stream().noneMatch(tm -> tm.getMemberId().equals(memberId))) {
-                throw new AuthorizationException("해당 팀 서버의 회원이 아닙니다.");
-            }
-
-            List<MemberReadModel> members = memberReadModelService.getMembersByMemberIds(teamMembers.stream().map(TeamMember::getMemberId).toList());
-            List<TeamMemberResponse> teamMemberResponses = teamMembers.stream()
-                    .map(teamMember -> {
-                        MemberReadModel member = members.stream()
-                                .filter(m -> m.getId().equals(teamMember.getMemberId()))
-                                .findFirst()
-                                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다. : " + teamMember.getMemberId()));
-                        return TeamMemberResponse.from(teamMember, MemberInfoResponse.from(member));
-                    })
-                    .collect(Collectors.toList());
-
-            TeamResponse teamResponse = TeamResponse.from(teamMembers.get(0).getTeam());
-            List<CategoryViewResponse> categoryViewResponses = getCategoryView(teamMembers.get(0).getTeam());
-            return TeamViewResponse.from(teamResponse, categoryViewResponses, teamMemberResponses);
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on getTeamView. [status:%s][message:%s]", e.status(), e.getMessage()));
+        List<TeamMember> teamMembers = teamMemberService.getTeamMembersByTeamId(teamId);
+        if (teamMembers.size() == 0) {
+            throw new EntityNotFoundException("존재하지 않는 팀 서버입니다.");
         }
+        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        if (teamMembers.stream().noneMatch(tm -> tm.getMemberId().equals(memberId))) {
+            throw new AuthorizationException("해당 팀 서버의 회원이 아닙니다.");
+        }
+
+        List<MemberReadModel> members = memberReadModelService.getMembersByMemberIds(teamMembers.stream().map(TeamMember::getMemberId).toList());
+        List<TeamMemberResponse> teamMemberResponses = teamMembers.stream()
+                .map(teamMember -> {
+                    MemberReadModel member = members.stream()
+                            .filter(m -> m.getId().equals(teamMember.getMemberId()))
+                            .findFirst()
+                            .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다. : " + teamMember.getMemberId()));
+                    return TeamMemberResponse.from(teamMember, MemberInfoResponse.from(member));
+                })
+                .collect(Collectors.toList());
+
+        TeamResponse teamResponse = TeamResponse.from(teamMembers.get(0).getTeam());
+        List<CategoryViewResponse> categoryViewResponses = getCategoryView(teamMembers.get(0).getTeam());
+        return TeamViewResponse.from(teamResponse, categoryViewResponses, teamMemberResponses);
     }
 
     @Transactional(readOnly = true)
@@ -198,33 +184,25 @@ public class TeamFacadeService {
 
     @Transactional
     public TeamResponse updateTeam(String token, UUID teamId, TeamUpdateRequest request) {
-        try {
-            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-            Team team = teamService.validateTeamMaster(teamId, memberId);
-            eventPublisher.publishEvent(new TeamUpdateEvent(team.getId().toString(), TeamEventPayload.from(team)));
-            return TeamResponse.from(team.updateTeam(request));
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on updateTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
-        }
+        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Team team = teamService.validateTeamMaster(teamId, memberId);
+        eventPublisher.publishEvent(new TeamUpdateEvent(team.getId().toString(), TeamEventPayload.from(team)));
+        return TeamResponse.from(team.updateTeam(request));
     }
 
     @Transactional
     public void modifyTeamMemberRole(String token, UUID teamId, UUID targetId, MemberRole role) {
-        try {
-            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-            TeamMember requester = teamMemberService.getTeamMemberByTeamIdAndMemberId(teamId, memberId);
+        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        TeamMember requester = teamMemberService.getTeamMemberByTeamIdAndMemberId(teamId, memberId);
 
-            if (!requester.getRole().getPermissions().contains(Permission.UPDATE)) {
-                throw new AuthorizationException("UPDATE 권한이 없습니다");
-            }
-            if (requester.getMemberId().equals(targetId)) {
-                throw new IllegalArgumentException("자기 자신의 역할은 수정할 수 없습니다.");
-            }
-
-            teamMemberService.modifyMemberRole(teamId, targetId, role);
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on modifyTeamMemberRole. [status:%s][message:%s]", e.status(), e.getMessage()));
+        if (!requester.getRole().getPermissions().contains(Permission.UPDATE)) {
+            throw new AuthorizationException("UPDATE 권한이 없습니다");
         }
+        if (requester.getMemberId().equals(targetId)) {
+            throw new IllegalArgumentException("자기 자신의 역할은 수정할 수 없습니다.");
+        }
+
+        teamMemberService.modifyMemberRole(teamId, targetId, role);
     }
 
     @Transactional
@@ -259,51 +237,39 @@ public class TeamFacadeService {
 
     @Transactional
     public void deleteTeam(String token, UUID teamId) {
-        try {
-            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-            Team team = teamService.validateTeamMaster(teamId, memberId);
-            List<Category> categories = categoryService.getCategoryByTeam(team);
-            if (!categories.isEmpty()) {
-                channelService.deleteAllChannelsByCategories(categories);
-                categoryService.deleteAllCategoriesByTeam(team);
-            }
-            teamMemberService.deleteAllByTeam(team);
-            teamService.deleteTeam(team);
-            eventPublisher.publishEvent(new TeamDeleteEvent(team.getId().toString(), TeamEventPayload.from(team)));
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on deleteTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
+        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        Team team = teamService.validateTeamMaster(teamId, memberId);
+        List<Category> categories = categoryService.getCategoryByTeam(team);
+        if (!categories.isEmpty()) {
+            channelService.deleteAllChannelsByCategories(categories);
+            categoryService.deleteAllCategoriesByTeam(team);
         }
+        teamMemberService.deleteAllByTeam(team);
+        teamService.deleteTeam(team);
+        eventPublisher.publishEvent(new TeamDeleteEvent(team.getId().toString(), TeamEventPayload.from(team)));
     }
 
     @Transactional
     public void leaveTeam(String token, UUID teamId) {
-        try {
-            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-            TeamMember teamMember = teamMemberService.deleteByTeamIdAndMemberId(teamId, memberId);
-            eventPublisher.publishEvent(new TeamMemberDeleteEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(teamMember)));
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on leaveTeam. [status:%s][message:%s]", e.status(), e.getMessage()));
-        }
+        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        TeamMember teamMember = teamMemberService.deleteByTeamIdAndMemberId(teamId, memberId);
+        eventPublisher.publishEvent(new TeamMemberDeleteEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(teamMember)));
     }
 
     @Transactional
     public void kickTeamMember(String token, UUID teamId, UUID targetId) {
-        try {
-            UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
-            TeamMember requester = teamMemberService.getTeamMemberByTeamIdAndMemberId(teamId, memberId);
+        UUID memberId = jwtTokenProvider.getMemberIdFromToken(token);
+        TeamMember requester = teamMemberService.getTeamMemberByTeamIdAndMemberId(teamId, memberId);
 
-            if (!requester.getRole().getPermissions().contains(Permission.DELETE)) {
-                throw new AuthorizationException("DELETE 권한이 없습니다");
-            }
-            if (requester.getMemberId().equals(targetId)) {
-                throw new IllegalArgumentException("자기 자신을 추방할 수 없습니다.");
-            }
-
-            TeamMember teamMember = teamMemberService.deleteByTeamIdAndMemberId(teamId, targetId);
-            eventPublisher.publishEvent(new TeamMemberDeleteEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(teamMember)));
-        } catch (FeignException e) {
-            throw new ExternalServiceException(String.format("Failed to get response on kickTeamMember. [status:%s][message:%s]", e.status(), e.getMessage()));
+        if (!requester.getRole().getPermissions().contains(Permission.DELETE)) {
+            throw new AuthorizationException("DELETE 권한이 없습니다");
         }
+        if (requester.getMemberId().equals(targetId)) {
+            throw new IllegalArgumentException("자기 자신을 추방할 수 없습니다.");
+        }
+
+        TeamMember teamMember = teamMemberService.deleteByTeamIdAndMemberId(teamId, targetId);
+        eventPublisher.publishEvent(new TeamMemberDeleteEvent(teamMember.getId().toString(), TeamMemberEventPayload.from(teamMember)));
     }
 
     @Transactional
