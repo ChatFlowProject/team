@@ -2,14 +2,18 @@ package shop.flowchat.team.service.facade;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.flowchat.team.common.util.JwtTokenProvider;
 import shop.flowchat.team.domain.channel.Channel;
 import shop.flowchat.team.domain.channel.ChannelType;
 import shop.flowchat.team.domain.channelmember.ChannelMember;
+import shop.flowchat.team.infrastructure.outbox.event.channel.ChannelCreateEvent;
 import shop.flowchat.team.infrastructure.outbox.model.readmodel.friendship.FriendshipReadModel;
 import shop.flowchat.team.infrastructure.outbox.model.readmodel.member.MemberReadModel;
+
+import shop.flowchat.team.infrastructure.outbox.payload.ChannelEventPayload;
 import shop.flowchat.team.infrastructure.redis.RedisService;
 import shop.flowchat.team.infrastructure.repository.readmodel.MemberReadModelRepository;
 import shop.flowchat.team.presentation.dto.channel.request.ChannelCreateRequest;
@@ -36,6 +40,7 @@ public class PrivateChannelService {
     private final MemberReadModelRepository memberReadModelRepository;
     private final RedisService redisService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public AddPrivateChannelResult addPrivateChannel(String token, MemberListRequest request) {
@@ -61,7 +66,8 @@ public class PrivateChannelService {
                 .orElseGet(() -> {
                     ChannelCreateRequest channelCreateRequest = ChannelCreateRequest.initPrivateChannel(friendNames, ChannelType.TEXT.toString());
                     Channel channel = channelService.createPrivateChannel(channelCreateRequest);
-                    channelMemberService.createChannelMembers(friends, channel);
+                    List<ChannelMember> channelMembers = channelMemberService.createChannelMembers(friends, channel);
+                    eventPublisher.publishEvent(new ChannelCreateEvent(channel.getId().toString(), ChannelEventPayload.from(channel, channelMembers)));
                     return new AddPrivateChannelResult(makePrivateChannelViewResponse(channel, memberId), true);
                 });
     }
